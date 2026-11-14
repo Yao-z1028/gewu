@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#efeae1">
+<title>格物 · 智能学伴 | 通用技术概论</title>
+<meta name="description" content="格物——《通用技术概论》课程智能学伴。陪师范生走完设计的一般过程，也陪他练会将来怎么把这些讲给学生听。">
+<style>/* 「格物」智能学伴 · 设计系统 v1.2
+   语言：工程图纸 / 制图台。
+   原则：暖纸面、硬投影（无模糊）、发丝描边、等宽图注；不用渐变、不用胶囊、不用柔光。*/
+
+:root{
+  /* 纸 */
+  --paper:#efeae1;
+  --sheet:#fffdf7;
+  --paper-2:#f7f3ea;
+  /* 墨 */
+  --ink:#1b1916;
+  --ink-2:#4b463d;
+  --ink-3:#857e71;
+  /* 线 */
+  --rule:#d8d1c3;
+  --rule-2:#bcb3a2;
+  --rule-3:#e7e1d5;
+  /* 标注色 */
+  --blue:#1d4f6b;
+  --blue-2:#2a6b8c;
+  --blue-soft:#e6eef2;
+  --red:#a63b1f;
+  --red-soft:#f6e7e0;
+  --green:#3f6b46;
+  --green-soft:#e8efe6;
+  /* 尺度 */
+  --r:8px;
+  --r-sm:6px;
+  --press:2px 2px 0 rgba(27,25,22,.06);
+  --press-2:3px 3px 0 rgba(27,25,22,.09);
+  --topbarH:56px;
+  --bars:104px;
+  --mono:"JetBrains Mono","Cascadia Mono","Consolas","SFMono-Regular",ui-monospace,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Source Han Sans SC","Segoe UI",sans-serif;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(rgba(29,79,107,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(29,79,107,.05) 1px,transparent 1px),
+    linear-gradient(rgba(29,79,107,.085) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(29,79,107,.085) 1px,transparent 1px);
+  background-size:20px 20px,20px 20px,100px 100px,100px 100px;
+  background-attachment:fixed;
+  font-size:15px;line-height:1.75;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:#f7d9c9;color:var(--ink)}
+
+/* ---------- 页头：标题栏 ---------- */
+.topbar{position:sticky;top:0;z-index:40;background:var(--paper);border-bottom:1px solid var(--rule-2)}
+.topbar-in{max-width:1080px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{
+  width:34px;height:34px;flex:0 0 34px;border:1.5px solid var(--ink);border-radius:4px;
+  background:var(--ink);color:var(--paper);display:grid;place-items:center
+}
+.mark svg{width:20px;height:20px;display:block}
+.brand-t{min-width:0;overflow:hidden}
+.brand-t b{
+  display:block;font-size:18px;font-weight:700;letter-spacing:.18em;line-height:1.15;
+  color:var(--ink);white-space:nowrap
+}
+.brand-t span{
+  display:block;font-size:10.5px;color:var(--ink-3);letter-spacing:.14em;line-height:1.4;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px
+}
+
+/* 图签：工程图上的标题栏 */
+.tblock{display:none;border:1px solid var(--rule-2);border-radius:3px;overflow:hidden;background:var(--sheet)}
+.tblock .tb-cell{display:flex;align-items:center;gap:6px;padding:3px 8px;border-right:1px solid var(--rule)}
+.tblock .tb-cell:last-child{border-right:0}
+.tblock span{font-size:9.5px;color:var(--ink-3);letter-spacing:.16em}
+.tblock b{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-2);letter-spacing:.03em;white-space:nowrap}
+.tblock .tb-wide b{font-family:var(--sans);letter-spacing:.06em}
+@media(min-width:700px){.tblock{display:flex}}
+@media(max-width:920px){.tblock .tb-wide{display:none}}
+
+.spacer{flex:1}
+.badge{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-2);
+  border:1px solid var(--rule-2);border-radius:3px;padding:4px 7px;background:var(--sheet);white-space:nowrap
+}
+.badge.ok{color:var(--green);border-color:#b6c9b4;background:var(--green-soft)}
+.badge.off{color:var(--ink-3)}
+.icon-btn{
+  width:32px;height:32px;flex:0 0 32px;border-radius:4px;border:1px solid var(--rule-2);
+  background:var(--sheet);color:var(--ink-2);cursor:pointer;display:grid;place-items:center;transition:.14s;padding:0
+}
+.icon-btn:hover{border-color:var(--ink);color:var(--ink)}
+.icon-btn:active{transform:translate(1px,1px)}
+
+/* ---------- 文件式标签 ---------- */
+.tabs{position:sticky;top:var(--topbarH);z-index:39;background:var(--paper);border-bottom:1px solid var(--rule-2)}
+.tabs-in{max-width:1080px;margin:0 auto;padding:0 10px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.tab{
+  position:relative;border:1px solid transparent;border-bottom:0;background:transparent;
+  color:var(--ink-3);font-family:inherit;font-size:12.5px;font-weight:500;letter-spacing:.06em;
+  min-height:38px;padding:8px 4px 7px;border-radius:5px 5px 0 0;cursor:pointer;transition:.14s;
+  display:flex;align-items:center;justify-content:center;white-space:nowrap;
+  border-top:2px solid transparent
+}
+.tab:hover{color:var(--ink);background:rgba(255,253,247,.55)}
+.tab[aria-selected="true"]{
+  background:var(--sheet);border-color:var(--rule-2);color:var(--ink);font-weight:600;
+  margin-bottom:-1px;padding-bottom:8px;border-top-color:var(--red)
+}
+@media(max-width:520px){.tab{font-size:11.5px;letter-spacing:.02em;padding:8px 2px 7px}}
+@media(min-width:700px){
+  .tabs-in{display:flex;gap:3px}
+  .tab{padding:8px 26px;font-size:13px}
+}
+
+/* ---------- 版面 ---------- */
+main{max-width:1080px;margin:0 auto;padding:20px 12px 72px}
+.view{display:none}
+.view.on{display:block;animation:ink .24s ease-out}
+@keyframes ink{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+.card{
+  background:var(--sheet);border:1px solid var(--rule-2);border-radius:var(--r);
+  box-shadow:var(--press)
+}
+.pad{padding:18px 20px 20px}
+
+/* 图注式分区标题 */
+.sect-h{
+  display:flex;align-items:center;gap:10px;margin:0 0 2px;
+  padding-bottom:9px;border-bottom:1px solid var(--rule)
+}
+.sect-h .num{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--red);
+  border:1px solid #e0b8a8;background:var(--red-soft);border-radius:3px;padding:2px 5px;line-height:1.2;
+  flex:0 0 auto
+}
+.sect-h h2{font-size:16px;font-weight:700;margin:0;letter-spacing:.04em;color:var(--ink)}
+.sect-h .rule{display:none}
+
+.lede,.hint{color:var(--ink-2);font-size:13px;margin:11px 0 15px;line-height:1.75}
+.footnote{
+  color:var(--ink-3);font-size:11.5px;line-height:1.7;margin:14px auto 0;max-width:640px;text-align:center;
+  letter-spacing:.02em
+}
+
+/* ---------- 对话 ---------- */
+.chat-wrap{
+  display:flex;flex-direction:column;max-width:880px;margin:0 auto;
+  min-height:320px;max-height:calc(100dvh - var(--bars) - 46px);
+  overflow:hidden
+}
+.log{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:18px 16px 10px;display:flex;flex-direction:column;gap:15px}
+.msg{display:flex;gap:9px;max-width:100%}
+.msg .av{
+  width:26px;height:26px;flex:0 0 26px;border-radius:3px;display:grid;place-items:center;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  border:1px solid var(--rule-2);background:var(--paper-2);color:var(--ink-2)
+}
+.msg.me{flex-direction:row-reverse}
+.msg.me .av{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.bub{
+  background:var(--sheet);border:1px solid var(--rule-2);border-left:2px solid var(--blue);
+  border-radius:2px 6px 6px 6px;padding:11px 14px;font-size:14.5px;line-height:1.8;
+  max-width:min(76ch,88%);word-break:break-word;color:var(--ink)
+}
+.msg.me .bub{
+  background:var(--ink);color:var(--paper);border:1px solid var(--ink);
+  border-left-width:1px;border-radius:6px 2px 6px 6px
+}
+.bub p{margin:0 0 8px}
+.bub p:last-child{margin-bottom:0}
+.bub ul,.bub ol{margin:8px 0;padding-left:19px}
+.bub li{margin:4px 0}
+.bub b,.bub strong{color:var(--blue);font-weight:700}
+.msg.me .bub b,.msg.me .bub strong{color:#fff}
+.bub em{font-style:normal;color:var(--blue-2);border-bottom:1px dotted var(--rule-2)}
+.msg.me .bub em{color:#e8dccd;border-color:rgba(255,255,255,.3)}
+.bub code{
+  font-family:var(--mono);font-size:12px;background:var(--paper-2);border:1px solid var(--rule-3);
+  padding:1px 5px;border-radius:3px;color:var(--ink-2)
+}
+.msg.me .bub code{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff}
+.bub .src{
+  margin-top:9px;padding-top:8px;border-top:1px solid var(--rule-3);
+  font-size:11px;color:var(--ink-3);letter-spacing:.02em;line-height:1.7;font-family:var(--mono)
+}
+.bub .muted{color:var(--ink-3)}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;padding:9px 16px 12px;border-top:1px solid var(--rule);background:var(--paper-2)}
+.chips:empty{display:none}
+.chip{
+  border:1px solid var(--rule-2);background:var(--sheet);color:var(--ink-2);border-radius:var(--r-sm);
+  min-height:34px;padding:6px 11px;font-size:12.5px;cursor:pointer;font-family:inherit;
+  transition:.14s;line-height:1.4;display:inline-flex;align-items:center;letter-spacing:.01em
+}
+.chip:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-2)}
+.chip:active{transform:translate(1px,1px)}
+
+/* 起步卡 */
+.starter{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:2px}
+.starter button{
+  text-align:left;border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--r-sm);
+  padding:11px 12px;cursor:pointer;font-family:inherit;transition:.14s;
+  display:flex;gap:9px;align-items:flex-start;min-height:56px
+}
+.starter button:hover{border-color:var(--ink);box-shadow:var(--press);transform:translate(-1px,-1px)}
+.starter button:active{transform:none;box-shadow:none}
+.starter i{
+  font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--red);
+  border:1px solid #e0b8a8;background:var(--red-soft);border-radius:2px;
+  padding:2px 4px;flex:0 0 auto;margin-top:2px;line-height:1.3;letter-spacing:.06em
+}
+.starter b{display:block;font-size:13px;color:var(--ink);font-weight:650;line-height:1.45;letter-spacing:.01em}
+.starter span{display:block;font-size:11px;color:var(--ink-3);line-height:1.5;margin-top:3px}
+@media(max-width:520px){
+  .starter{gap:7px}
+  .starter button{padding:9px 10px;gap:7px;min-height:52px}
+  .starter b{font-size:12.5px}
+}
+@media(max-width:340px){.starter{grid-template-columns:1fr}}
+
+.composer{display:flex;gap:8px;padding:11px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--rule)}
+.composer .btn{min-height:44px;padding:0 18px}
+.composer textarea{
+  flex:1;min-width:0;resize:none;border:1px solid var(--rule-2);border-radius:var(--r-sm);
+  padding:10px 12px;font-family:inherit;font-size:16px;line-height:1.5;height:44px;max-height:132px;
+  outline:none;background:var(--paper-2);color:var(--ink);overflow-y:auto;
+  transition:border-color .14s,box-shadow .14s,background .14s
+}
+.composer textarea::placeholder{color:var(--ink-3)}
+.composer textarea:focus{border-color:var(--ink);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--ink)}
+
+/* ---------- 按钮：印刷式，硬投影 ---------- */
+.btn{
+  border:1px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:var(--r-sm);
+  min-height:38px;padding:0 16px;font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:.04em;
+  cursor:pointer;transition:.14s;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px
+}
+.btn:hover{background:#000;border-color:#000}
+.btn:active{transform:translate(1px,1px)}
+.btn:disabled{opacity:.32;cursor:not-allowed;transform:none}
+.btn.accent{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.accent:hover{background:#164259;border-color:#164259}
+.btn.ghost{background:var(--sheet);color:var(--ink-2);border-color:var(--rule-2)}
+.btn.ghost:hover{border-color:var(--ink);color:var(--ink);background:var(--paper-2)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:12.5px}
+
+/* ---------- 表单 ---------- */
+label.f{
+  display:block;font-size:11px;color:var(--ink-3);letter-spacing:.14em;margin:0 0 5px;
+  font-family:var(--mono)
+}
+input[type=text],input[type=number],input[type=password],textarea,select{
+  width:100%;border:1px solid var(--rule-2);border-radius:var(--r-sm);padding:9px 11px;
+  font-family:inherit;font-size:16px;background:var(--paper-2);outline:none;color:var(--ink);
+  transition:border-color .14s,box-shadow .14s,background .14s
+}
+input:focus,textarea:focus,select:focus{border-color:var(--ink);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--ink)}
+textarea{resize:vertical;line-height:1.7}
+#ta{min-height:92px}
+select{
+  appearance:none;padding-right:34px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 18px,calc(100% - 12px) 18px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat
+}
+
+/* ---------- 设计工坊：五步标尺 ---------- */
+.prog{display:flex;gap:4px;margin:6px 0 18px;position:relative}
+.prog b{
+  flex:1;height:6px;background:var(--rule-3);border:1px solid var(--rule);border-radius:2px;
+  transition:.3s;position:relative
+}
+.prog b.done{background:var(--blue);border-color:var(--blue)}
+.prog b.now{background:var(--red);border-color:var(--red)}
+.prog b.now::after{
+  content:"";position:absolute;left:50%;top:-7px;width:1px;height:5px;background:var(--red);transform:translateX(-.5px)
+}
+.stage-t{font-size:15px;font-weight:700;margin:0 0 6px;letter-spacing:.03em}
+.stage-q{color:var(--ink-2);font-size:14px;margin:0 0 14px;line-height:1.8}
+.checks{list-style:none;padding:0;margin:0 0 16px}
+.checks li{
+  display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--rule-2);
+  border-radius:var(--r-sm);margin-bottom:6px;font-size:13.5px;color:var(--ink-2);
+  cursor:pointer;transition:.14s;background:var(--sheet);min-height:44px;line-height:1.6
+}
+.checks li:hover{background:var(--paper-2)}
+.checks li.on{background:var(--green-soft);border-color:#b6c9b4;color:var(--ink)}
+.checks li span.box{
+  width:16px;height:16px;flex:0 0 16px;border:1.5px solid var(--rule-2);border-radius:2px;margin-top:3px;
+  display:grid;place-items:center;font-size:10px;color:#fff;background:var(--sheet);transition:.14s
+}
+.checks li.on span.box{background:var(--green);border-color:var(--green)}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.grow{flex:1;min-width:0}
+
+/* ---------- 诊断 / 画像 ---------- */
+.dim{margin-bottom:12px}
+.dim-h{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;color:var(--ink-2);letter-spacing:.02em}
+.dim-h em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.bar{height:6px;background:var(--rule-3);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;transition:width .5s ease-out}
+.bar i.hi{background:var(--green)}
+.bar i.mid{background:#b07d24}
+.bar i.lo{background:var(--red)}
+
+.tip{
+  display:flex;gap:9px;padding:11px 13px;border-radius:var(--r-sm);font-size:13px;margin-top:10px;
+  background:var(--red-soft);border:1px solid #e0b8a8;color:#6d2c17;line-height:1.75
+}
+.tip.ok{background:var(--green-soft);border-color:#b6c9b4;color:#2c4a31}
+.tip b{color:inherit}
+.tip>span{font-family:var(--mono);font-weight:700;flex:0 0 auto}
+
+/* ---------- 图样训练 ---------- */
+.qz-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.stat{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em}
+.stat b{color:var(--ink);font-size:14px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:9px;margin-top:16px}
+.opt{
+  position:relative;border:1px solid var(--rule-2);border-radius:var(--r-sm);background:var(--sheet);
+  padding:12px 6px 7px;cursor:pointer;transition:.14s;display:flex;flex-direction:column;
+  align-items:center;gap:5px;font-family:inherit;min-height:64px
+}
+.opt:hover{border-color:var(--ink);box-shadow:var(--press);transform:translate(-1px,-1px)}
+.opt.right{border-color:var(--green);background:var(--green-soft)}
+.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt .lb{
+  position:absolute;top:4px;left:6px;font-size:9.5px;color:var(--ink-3);
+  letter-spacing:.12em;font-family:var(--mono)
+}
+.opt svg{display:block;max-width:100%;height:auto;margin-top:4px}
+
+/* ---------- 表格：制图表格 ---------- */
+table.dt{
+  width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px;table-layout:fixed;
+  border:1px solid var(--rule-2)
+}
+table.dt th,table.dt td{border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);padding:6px 3px;text-align:center;overflow:hidden}
+table.dt th:last-child,table.dt td:last-child{border-right:0}
+table.dt tr:last-child td{border-bottom:0}
+table.dt th{background:var(--paper-2);color:var(--ink-2);font-weight:600;font-size:11px;white-space:nowrap;letter-spacing:.04em}
+table.dt td input{padding:5px 2px;text-align:center;border-radius:2px;font-size:12.5px;min-width:0;border-color:var(--rule);background:var(--sheet)}
+table.dt td:first-child{background:var(--paper-2);font-family:var(--mono);font-size:11.5px;color:var(--ink-3);width:32px}
+
+/* ---------- 其他 ---------- */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.kv{display:flex;justify-content:space-between;gap:14px;align-items:baseline;font-size:13px;padding:7px 0;border-bottom:1px dotted var(--rule-2)}
+.kv:last-child{border:0}
+.kv span{color:var(--ink-3);flex:0 1 auto;letter-spacing:.02em}
+.kv b{font-weight:600;text-align:right;flex:0 1 auto}
+@media(max-width:430px){.kv{flex-direction:column;align-items:flex-start;gap:2px}.kv b{text-align:left}}
+#radar{display:flex;justify-content:center;width:100%}
+#radar svg{width:100%;max-width:320px;height:auto}
+footer{
+  max-width:1080px;margin:0 auto;padding:0 16px 34px;color:var(--ink-3);font-size:10.5px;
+  line-height:1.8;text-align:center;letter-spacing:.03em
+}
+footer b{color:var(--ink-2);font-weight:700}
+.toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
+  opacity:0;pointer-events:none;background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:4px;
+  font-size:12.5px;z-index:99;transition:.22s;box-shadow:3px 3px 0 rgba(0,0,0,.2);max-width:86vw
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.mono{font-family:var(--mono)}
+.muted{color:var(--ink-3)}
+
+/* ---------- 设置面板 ---------- */
+.modal{position:fixed;inset:0;z-index:80;background:rgba(27,25,22,.55);display:grid;place-items:end center}
+.modal[hidden]{display:none}
+.sheet{
+  background:var(--sheet);width:100%;max-width:480px;border:1px solid var(--rule-2);
+  border-radius:10px 10px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 0 rgba(27,25,22,.12);animation:up .22s ease-out;max-height:92dvh;overflow-y:auto
+}
+@keyframes up{from{transform:translateY(18px);opacity:.6}to{transform:none;opacity:1}}
+.sheet h3{margin:0 0 6px;font-size:16px;font-weight:700;letter-spacing:.05em}
+.sheet .f{margin-top:12px}
+@media(min-width:620px){.modal{place-items:center}.sheet{border-radius:10px}}
+
+/* ---------- 窄屏 ---------- */
+@media(max-width:360px){
+  .pad{padding:15px}
+  .bub{font-size:14px;padding:10px 11px}
+  .topbar-in{gap:8px;padding:8px 12px}
+  .brand-t b{font-size:16.5px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter">
+          <path d="M2.5 18.5h19"/><path d="M5.5 18.5V8.5L12 4.5l6.5 4v10"/><path d="M12 4.5v14"/>
+          <circle cx="12" cy="11" r="2.2"/><path d="M2.5 18.5v2M21.5 18.5v2"/>
+        </svg>
+      </div>
+      <div class="brand-t">
+        <b>格物</b>
+        <span>通用技术概论 · 智能学伴</span>
+      </div>
+    </div>
+
+    <div class="tblock" aria-hidden="true">
+      <div class="tb-cell"><span>图号</span><b>GW&nbsp;2401</b></div>
+      <div class="tb-cell"><span>比例</span><b>1&nbsp;:&nbsp;1</b></div>
+      <div class="tb-cell tb-wide"><span>课程</span><b>通用技术概论</b></div>
+    </div>
+
+    <div class="spacer"></div>
+    <span class="badge off" id="aiBadge">本地模式</span>
+    <button class="icon-btn" id="openCfg" title="大模型设置" aria-label="大模型设置">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+        <path d="M4 7h10M18 7h2M4 17h4M12 17h8"/>
+        <circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="modal" id="settings" hidden>
+  <div class="sheet">
+    <h3>大模型设置</h3>
+    <p class="hint" style="margin-bottom:4px">留空即使用本地知识库模式，离线也能用。</p>
+    <label class="f" for="cfgUrl">API 地址（OpenAI 兼容）</label>
+    <input id="cfgUrl" type="text" autocomplete="off" spellcheck="false">
+    <label class="f" for="cfgModel">模型名</label>
+    <input id="cfgModel" type="text" autocomplete="off" spellcheck="false">
+    <label class="f" for="cfgKey">API Key</label>
+    <input id="cfgKey" type="password" autocomplete="off" placeholder="sk-...">
+    <div class="row">
+      <button class="btn accent sm" id="cfgSave">保存</button>
+      <button class="btn ghost sm" id="cfgTest">测试连接</button>
+      <div class="grow"></div>
+      <button class="btn ghost sm" id="cfgClose">关闭</button>
+    </div>
+    <p class="hint" id="cfgMsg" style="margin:10px 0 0;min-height:18px"></p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="模块导航">
+  <div class="tabs-in">
+    <button class="tab" data-go="chat" aria-selected="true">对话</button>
+    <button class="tab" data-go="design" aria-selected="false">设计工坊</button>
+    <button class="tab" data-go="quiz" aria-selected="false">图样训练</button>
+    <button class="tab" data-go="exp" aria-selected="false">技术试验</button>
+    <button class="tab" data-go="profile" aria-selected="false">我的画像</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ===================== 01 对话 ===================== -->
+  <section class="view on" id="v-chat">
+    <div class="card chat-wrap">
+      <div class="log" id="log"></div>
+      <div class="chips" id="chips"></div>
+      <div class="composer">
+        <textarea id="in" rows="1" placeholder="输入你的问题…"></textarea>
+        <button class="btn accent" id="send">发送</button>
+      </div>
+    </div>
+    <p class="footnote">
+      收录范围：设计的一般过程 · 图样表达 · 结构与设计 · 流程与设计 · 系统与设计 · 控制与设计 · 评价与人机关系，以及这些内容怎么教
+    </p>
+  </section>
+
+  <!-- ===================== 02 设计工坊 ===================== -->
+  <section class="view" id="v-design">
+    <div class="card pad">
+      <div class="sect-h">
+        <span class="num">图 02</span>
+        <h2>设计工坊</h2>
+        <span class="rule" aria-hidden="true"></span>
+      </div>
+      <p class="lede">按设计的一般过程分五步推进。每步写清你的想法，勾选已做到的检查点，最后生成设计任务单与自检报告。</p>
+      <div class="prog" id="prog"></div>
+      <h3 class="stage-t" id="stageT"></h3>
+      <p class="stage-q" id="stageQ"></p>
+      <ul class="checks" id="checks"></ul>
+      <label class="f" for="ta">你的回答</label>
+      <textarea id="ta" placeholder="用你自己的话写，写不完整也没关系，我会在下一步追问。"></textarea>
+      <div class="row">
+        <button class="btn ghost sm" id="prev">← 上一步</button>
+        <button class="btn accent sm" id="next">下一步 →</button>
+        <div class="grow"></div>
+        <button class="btn ghost sm" id="resetDesign">清空</button>
+      </div>
+    </div>
+    <div id="sheet"></div>
+  </section>
+
+  <!-- ===================== 03 图样训练 ===================== -->
+  <section class="view" id="v-quiz">
+    <div class="card pad">
+      <div class="sect-h">
+        <span class="num">图 03</span>
+        <h2>图样训练 · 三视图闯关</h2>
+        <span class="rule" aria-hidden="true"></span>
+      </div>
+      <p class="lede">俯视图上的数字表示该位置叠了几个小正方体。判断主视图或数出总数——无限出题，做错立刻讲错因。</p>
+      <div class="qz-top">
+        <span class="stat" id="stat"></span>
+        <div class="grow"></div>
+        <button class="btn ghost sm" id="qNext">换一题</button>
+      </div>
+      <div id="qBody"></div>
+      <div class="opts" id="opts"></div>
+      <div id="fb"></div>
+    </div>
+  </section>
+
+  <!-- ===================== 04 技术试验 ===================== -->
+  <section class="view" id="v-exp">
+    <div class="card pad">
+      <div class="sect-h">
+        <span class="num">图 04</span>
+        <h2>技术试验向导</h2>
+        <span class="rule" aria-hidden="true"></span>
+      </div>
+      <p class="lede">选一个试验类型，我帮你把自变量、因变量、控制变量固定下来，再填数据自动算平均、判趋势、生成结论模板。</p>
+      <label class="f" for="expType">试验类型</label>
+      <select id="expType">
+        <option value="structure">结构承重试验</option>
+        <option value="material">材料性能对比试验</option>
+        <option value="stability">稳定性倾角试验</option>
+        <option value="control">控制灵敏度试验</option>
+      </select>
+      <div id="expSpec" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card pad" style="margin-top:14px">
+      <div class="sect-h">
+        <span class="num">图 05</span>
+        <h2>试验记录表</h2>
+        <span class="rule" aria-hidden="true"></span>
+      </div>
+      <p class="lede">每个水平重复测 3 次。少于两行有效数据无法分析。</p>
+      <div id="expTable"></div>
+      <div class="row"><button class="btn accent sm" id="expCalc">计算并生成结论</button></div>
+    </div>
+
+    <div id="expOut"></div>
+  </section>
+
+  <!-- ===================== 05 我的画像 ===================== -->
+  <section class="view" id="v-profile">
+    <div class="grid2">
+      <div class="card pad">
+        <div class="sect-h">
+          <span class="num">图 06</span>
+          <h2>五大核心素养画像</h2>
+          <span class="rule" aria-hidden="true"></span>
+        </div>
+        <p class="lede">依据你在各模块的行为留痕估算，仅用于自我诊断，不是课程成绩。</p>
+        <div id="radar" style="display:flex;justify-content:center"></div>
+        <div id="advice"></div>
+      </div>
+      <div class="card pad">
+        <div class="sect-h">
+          <span class="num">图 07</span>
+          <h2>学习留痕与分项得分</h2>
+          <span class="rule" aria-hidden="true"></span>
+        </div>
+        <div id="scoreSum"></div>
+        <div style="height:14px"></div>
+        <div id="scoreList"></div>
+        <div class="row"><button class="btn ghost sm" id="resetAll">清空记录</button></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><b>格物 · 智能学伴</b>　《通用技术概论》课程学习支持工具　GW 2401 · v1.2</p>
+  <p>依据《普通高中通用技术课程标准（2017年版2020年修订）》与师范类专业认证要求编制　｜　学习记录仅存于本机浏览器</p>
+</footer>
+
+<script>/* 「格物」智能学伴 —— 课程知识库 / 题库 / 脚手架
+   内容依据《普通高中通用技术课程标准（2017年版2020年修订）》必修1《技术与设计1》、必修2《技术与设计2》。*/
+
+const KB = [
+/* ============ A. 课程与目标 ============ */
+{id:"a1",t:"通用技术的五大核心素养",k:["核心素养","素养","五大素养","育人目标","培养什么"],
+a:`通用技术课程要培养的<strong>五大核心素养</strong>：<br>
+<ul>
+<li><strong>技术意识</strong>——对技术现象敏感，理解技术与人、社会、自然的关系；</li>
+<li><strong>工程思维</strong>——用系统与权衡的方式看待设计问题；</li>
+<li><strong>创新设计</strong>——能发现问题并提出有新意的方案；</li>
+<li><strong>图样表达</strong>——能用三视图、尺寸标注等\"工程语言\"说清自己的设计；</li>
+<li><strong>物化能力</strong>——能把方案做成模型或原型，并动手验证。</li>
+</ul>
+做题时记住：<em>这五条既是育人目标，也是评价维度</em>。写设计说明、做答辩，都要往这五条上落。`,
+q:["创新设计怎么练？","图样表达为什么难？","物化能力课上怎么体现？"]},
+
+{id:"a2",t:"通用技术是什么课",k:["通用技术","课程性质","这门课","学什么","课程定位"],
+a:`通用技术是一门<strong>立足实践、注重创造</strong>的国家课程，不是\"手工课\"，也不是\"劳技课\"。它以<em>设计</em>为主线，让学生在真实问题中经历\"发现问题—构思方案—制作原型—试验优化—交流评价\"的完整过程。<br>
+必修1《技术与设计1》讲<strong>设计的一般过程与方法</strong>；必修2《技术与设计2》讲<strong>结构、流程、系统、控制</strong>四个专题。`,
+q:["必修1和必修2有什么区别？","设计的一般过程是什么？"]},
+
+{id:"a3",t:"必修1与必修2的内容结构",k:["必修1","必修2","技术与设计1","技术与设计2","教材结构","内容"],
+a:`<ul>
+<li><strong>必修1《技术与设计1》</strong>：技术及其性质、设计的一般过程、发现与明确问题、方案的构思与表达、制作模型或原型、技术试验、设计的评价。</li>
+<li><strong>必修2《技术与设计2》</strong>：结构与设计、流程与设计、系统与设计、控制与设计。</li>
+</ul>
+两者的关系是：必修1 学\"怎么设计\"，必修2 用四个经典专题\"练设计\"。`,
+q:["结构与设计考什么？","流程优化怎么做？"]},
+
+{id:"a4",t:"学业质量与评价方式",k:["学业质量","评价","怎么考","评分","量规","rubric"],
+a:`通用技术的评价<strong>不能只看纸笔分数</strong>，主流做法是\"过程性评价 + 作品评价\"双轨：<br>
+<ul>
+<li><strong>过程性</strong>：设计日志、方案草图、试验记录、小组互评；</li>
+<li><strong>作品</strong>：模型/原型的功能达成度、工艺水平、创新点、说明书的规范性；</li>
+<li><strong>素养</strong>：按五大核心素养分维度打分，形成雷达图。</li>
+</ul>
+一句话：<em>看过程、看证据、看素养，而不是只看最终成品好不好看。</em>`,
+q:["设计日志要记什么？","怎么给作品打分？"]},
+
+/* ============ B. 设计过程 ============ */
+{id:"b1",t:"设计的一般过程",k:["设计的一般过程","设计过程","设计流程","步骤","几个阶段"],
+a:`设计的一般过程分为<strong>五个阶段</strong>（不是直线，而是可以回退的循环）：<br>
+<ol>
+<li><strong>发现与明确问题</strong>——谁、在什么情境下、遇到什么麻烦；</li>
+<li><strong>制定设计方案</strong>——收集信息 → 构思方案 → 比较权衡 → 呈现方案；</li>
+<li><strong>制作模型或原型</strong>——把图纸变成实物，验证可行性；</li>
+<li><strong>优化与改进</strong>——依据试验数据改结构、改材料、改参数；</li>
+<li><strong>交流与评价</strong>——写说明书、做展示、接受质询。</li>
+</ol>
+<em>最容易被跳过的是第 1 步和第 4 步</em>：很多同学一上来就画图，一做完就交，恰恰丢掉了设计的核心。`,
+q:["怎么发现一个好问题？","方案构思有哪些方法？","试验数据怎么用？"]},
+
+{id:"b2",t:"如何发现与明确问题",k:["发现问题","明确问题","选题","调研","需求","痛点"],
+a:`好问题有三个特征：<strong>真实、具体、可解</strong>。<br>
+<ul>
+<li><strong>真实</strong>：来自你自己的生活或身边人，不是编的；</li>
+<li><strong>具体</strong>：有明确的<em>使用者、场景、时刻</em>，例如\"晚自习后食堂已关门、住宿生吃不到热饭\"；</li>
+<li><strong>可解</strong>：以你现有的材料、工时、经费能做出来。</li>
+</ul>
+把\"发现问题\"变成\"明确问题\"，要写出一句<strong>设计任务陈述</strong>：<br>
+<code>为【谁】，在【什么情境】下，解决【什么问题】，满足【什么要求】。</code>`,
+q:["设计任务陈述怎么写？","需求调研怎么做？"]},
+
+{id:"b3",t:"明确设计要求的清单",k:["设计要求","设计分析","限制条件","约束","人机物环"],
+a:`明确设计要求，从<strong>\"人—机—物—环\"</strong>四个角度拆：<br>
+<ul>
+<li><strong>人</strong>：使用者的身高、力量、习惯、特殊需求（老人/儿童/残障）；</li>
+<li><strong>机</strong>：产品要实现的功能、性能指标、寿命；</li>
+<li><strong>物</strong>：可用的材料、标准件、加工设备；</li>
+<li><strong>环</strong>：使用环境（室内外、温湿度、光照）、安装空间、运输条件。</li>
+</ul>
+再加三条硬约束：<strong>成本上限、工期、安全红线</strong>。这七项写全，方案就不容易\"想当然\"。`,
+q:["人机关系要注意什么？","成本和工期怎么权衡？"]},
+
+{id:"b4",t:"信息的收集与整理",k:["收集信息","查资料","调研方法","文献","访谈","问卷"],
+a:`常用四类方法：<strong>文献检索、网络检索、访谈、问卷/观察</strong>。<br>
+整理时做三件事：<br>
+<ol>
+<li><strong>分类</strong>——按\"原理类/材料类/结构类/案例类\"归档；</li>
+<li><strong>辨伪</strong>——看来源、看时间、看是否有数据支撑；</li>
+<li><strong>提炼</strong>——每条信息后面写一句\"对我有什么用\"。</li>
+</ol>
+<em>收集信息不是为了凑参考文献，而是为了不重复别人已经失败的路。</em>`,
+q:["有多少方案才算够？","怎么避免抄袭？"]},
+
+{id:"b5",t:"方案构思的常用方法",k:["构思","方案","头脑风暴","联想法","设问法","列举法","逆向","类比"],
+a:`五种最实用的构思方法：<br>
+<ul>
+<li><strong>头脑风暴</strong>——先求量、不许批评、鼓励搭便车；</li>
+<li><strong>设问法（5W1H）</strong>——对现有做法连续追问\"为什么这样、能不能换\"；</li>
+<li><strong>列举法</strong>——把缺点/希望点逐条列出，逐条找对策；</li>
+<li><strong>联想法/类比法</strong>——从生物、生活器物中借结构（如仿生抓取）；</li>
+<li><strong>逆向思考</strong>——把\"怎么固定\"换成\"怎么可拆卸\"。</li>
+</ul>
+<em>要求：至少拿出 2 个原理不同的方案，才有比较的意义。</em>`,
+q:["方案怎么比较？","草图要画到什么程度？"]},
+
+{id:"b6",t:"方案的比较与权衡",k:["比较","权衡","方案筛选","决策","评价矩阵"],
+a:`推荐用<strong>评价矩阵（加权打分表）</strong>：<br>
+<ol>
+<li>列出评价指标：功能达成、结构可靠、成本、工艺难度、美观、安全、可持续；</li>
+<li>按重要性赋权重（合计 100%）；</li>
+<li>每个方案 1–5 分打分，加权求和；</li>
+<li><strong>看总分，也看有没有\"一票否决\"项</strong>（如不满足安全）。</li>
+</ol>
+<em>设计没有唯一正确答案，只有\"在给定约束下的较优解\"。</em>这就是工程思维。`,
+q:["权重怎么定？","两个方案差不多怎么办？"]},
+
+{id:"b7",t:"技术试验的作用与方法",k:["技术试验","试验","测试","验证","性能","对比试验","模拟试验"],
+a:`技术试验是<strong>用可控的手段验证设计假设</strong>，不是\"做出来试试看\"。<br>
+常见类型：<strong>性能试验</strong>（承重、续航）、<strong>对比试验</strong>（两种材料谁更优）、<strong>模拟试验</strong>（用缩比模型代替实物）、<strong>破坏性试验</strong>（测极限）、<strong>寿命试验</strong>。<br>
+一份合格的试验记录必须写清：<em>试验目的、变量设置、测量工具、原始数据、结论</em>。`,
+q:["变量怎么控制？","试验数据怎么分析？"]},
+
+{id:"b8",t:"技术试验中的变量控制",k:["变量","控制变量","自变量","因变量","对照","重复"],
+a:`三步走：<br>
+<ul>
+<li><strong>自变量</strong>——你主动改变的（如支撑柱数量：3/4/5 根）；</li>
+<li><strong>因变量</strong>——你测量的（如承重极限，单位 N）；</li>
+<li><strong>控制变量</strong>——必须保持一致的（材料、尺寸、加载位置、环境温度）。</li>
+</ul>
+再加两条：<strong>重复 3 次取平均</strong>、<strong>设对照组</strong>。只改一个变量，结论才有说服力。<br>
+例：\"在其余条件相同的情况下，支撑柱由 3 根增至 5 根，承重极限由 82 N 提高到 131 N。\"`,
+q:["数据记成什么格式？","结论怎么写才不空？"]},
+
+{id:"b9",t:"模型与原型",k:["模型","原型","概念模型","结构模型","功能模型","展示模型","缩比"],
+a:`<ul>
+<li><strong>概念模型</strong>——验证想法能不能成立，可以是纸板、黏土；</li>
+<li><strong>结构模型</strong>——验证受力、连接、稳定性；</li>
+<li><strong>功能模型</strong>——验证\"能不能用\"（如机构能否联动）；</li>
+<li><strong>展示模型</strong>——给人看，讲究外观与工艺；</li>
+<li><strong>原型</strong>——接近真实产品的第一版，可交付试用。</li>
+</ul>
+<em>做模型的目的不是\"做个好看的\"，而是\"用最低成本暴露问题\"。</em>先做粗糙的概念模型，往往比直接做精细模型更省时间。`,
+q:["材料怎么选？","3D打印适合做什么？"]},
+
+/* ============ C. 图样表达 ============ */
+{id:"c1",t:"三视图的投影规律",k:["三视图","投影","长对正","高平齐","宽相等","主视图","俯视图","左视图"],
+a:`三视图来自<strong>正投影</strong>，三条铁律：<br>
+<ul>
+<li><strong>主视图与俯视图——长对正</strong>（左右方向长度对齐）；</li>
+<li><strong>主视图与左视图——高平齐</strong>（上下方向高度对齐）；</li>
+<li><strong>俯视图与左视图——宽相等</strong>（前后方向宽度相等）。</li>
+</ul>
+位置关系：主视图在左上，俯视图在它正下方，左视图在它正右方。<br>
+<em>口诀背下来不难，难在\"看不见的线要不要画\"</em>——可见轮廓画<strong>粗实线</strong>，不可见轮廓画<strong>虚线</strong>。`,
+q:["虚线和实线怎么分？","三视图怎么画？","组合体怎么拆？"]},
+
+{id:"c2",t:"三视图的画法步骤",k:["画三视图","作图步骤","步骤","怎么画"],
+a:`<ol>
+<li><strong>定主视方向</strong>——选最能反映形状特征、且摆放自然的那一面；</li>
+<li><strong>选比例、定图幅</strong>，画基准线（底面、对称中心线）；</li>
+<li><strong>先画主视图</strong>，再按\"长对正\"画俯视图，按\"高平齐\"画左视图；</li>
+<li><strong>补画细节</strong>：孔、槽、圆角；</li>
+<li><strong>检查三视图</strong>：逐条核对长对正、高平齐、宽相等；</li>
+<li><strong>描深</strong>：可见轮廓用粗实线，不可见用虚线，最后擦去辅助线。</li>
+</ol>
+<em>顺序千万别乱</em>：先主后俯再左，比三张一起画错得少。`,
+q:["细实线和粗实线有什么区别？","圆角怎么表示？"]},
+
+{id:"c3",t:"尺寸标注的三要素",k:["尺寸标注","标注","尺寸界线","尺寸线","尺寸数字","箭头"],
+a:`一个完整尺寸由<strong>三要素</strong>组成：<br>
+<ul>
+<li><strong>尺寸界线</strong>——细实线，从轮廓线引出，略超出尺寸线 2 mm；</li>
+<li><strong>尺寸线</strong>——细实线，两端带箭头，与被注线段平行；</li>
+<li><strong>尺寸数字</strong>——写在尺寸线上方居中，单位 mm 通常不写。</li>
+</ul>
+四条基本规则：<strong>不重复、不遗漏、不矛盾、不缺</strong>；尺寸尽量注在形状特征最明显的视图上。`,
+q:["直径和半径怎么标？","标注要标哪些尺寸？"]},
+
+{id:"c4",t:"尺寸标注的常见错误",k:["标注错误","标错","常见错误","漏标","重复标注"],
+a:`高频失分点：<br>
+<ul>
+<li>把尺寸线画成<strong>粗实线</strong>（应为细实线）；</li>
+<li>尺寸数字被图线<strong>穿过</strong>（应断开图线或引出标注）；</li>
+<li><strong>重复标注</strong>同一尺寸（封闭尺寸链）；</li>
+<li>圆的<strong>直径漏写 φ</strong>、圆弧<strong>半径漏写 R</strong>；</li>
+<li>标注了<strong>加工不需要</strong>的尺寸，却漏了关键定位尺寸。</li>
+</ul>
+检查口诀：<em>每个特征至少一个定位尺寸 + 一个定形尺寸</em>。`,
+q:["定位尺寸和定形尺寸怎么分？","φ 和 R 什么时候用？"]},
+
+{id:"c5",t:"轴测图与透视图",k:["轴测图","透视图","立体图","正等测","斜二测","效果图"],
+a:`<ul>
+<li><strong>轴测图</strong>——平行投影得到的立体图，<em>可量取尺寸</em>，工程上常用正等测（三轴夹角 120°）；</li>
+<li><strong>透视图</strong>——中心投影，近大远小，<em>符合视觉但不合度量</em>，用于效果展示；</li>
+<li><strong>正投影三视图</strong>——唯一能准确表达尺寸的图样。</li>
+</ul>
+答辩时常见组合：<strong>三视图给数据，轴测图给直觉，效果图给观感</strong>。`,
+q:["正等测怎么画？","草图重要吗？"]},
+
+/* ============ D. 结构与设计 ============ */
+{id:"d1",t:"结构的三种基本类型",k:["结构类型","实体结构","框架结构","壳体结构","结构"],
+a:`<ul>
+<li><strong>实体结构</strong>——靠自身材料填满受力，如砖墙、堤坝、实心墩；特点是抗压好、耗材多。</li>
+<li><strong>框架结构</strong>——由杆件连接成骨架，如脚手架、桁架、自行车架；<em>用料省、自重轻</em>，但杆件受拉压、节点受力集中。</li>
+<li><strong>壳体结构</strong>——薄壁曲面受力，如蛋壳、拱顶、头盔；能把集中力<strong>分散到整个曲面</strong>，所以很\"薄\"却很结实。</li>
+</ul>
+复杂结构多是三种的组合，如\"框架 + 壳体\"的体育馆屋顶。`,
+q:["框架结构为什么省料？","壳体为什么抗压？"]},
+
+{id:"d2",t:"影响结构稳定性的因素",k:["稳定性","稳定","重心","支撑面","倾倒","翻倒"],
+a:`结构的稳定性，指<strong>在负载下保持原有平衡状态的能力</strong>。三个决定因素：<br>
+<ul>
+<li><strong>重心位置</strong>——重心越低越稳；</li>
+<li><strong>支撑面大小</strong>——支撑面（不是接触面）越大越稳；</li>
+<li><strong>结构形状</strong>——三角形比四边形稳定。</li>
+</ul>
+判别方法：<em>重力作用线是否落在支撑面内</em>。落进去才不翻；跑到边缘外就倾倒。`,
+q:["怎么提高稳定性？","三角形为什么稳？"]},
+
+{id:"d3",t:"提高结构稳定性的方法",k:["提高稳定性","怎么更稳","加底座","配重","三角支撑"],
+a:`五条常用手段（按性价比排序）：<br>
+<ol>
+<li><strong>降低重心</strong>——底部加配重、把重部件下移；</li>
+<li><strong>增大支撑面</strong>——加底脚、做成外八字；</li>
+<li><strong>增加三角支撑</strong>——在易变形的角上加斜撑，把四边形变成三角形；</li>
+<li><strong>改变形状</strong>——用上小下大的\"金字塔\"轮廓；</li>
+<li><strong>增加约束</strong>——地脚螺栓、吸盘、防滑垫。</li>
+</ol>
+<em>注意区分</em>：稳定性管\"会不会倒\"，强度管\"会不会坏\"，两者对策不同。`,
+q:["稳定性和强度有什么区别？","怎么提高强度？"]},
+
+{id:"d4",t:"结构的强度与内力",k:["强度","内力","应力","受拉","受压","弯曲","剪切","扭转"],
+a:`<strong>强度</strong>是结构抵抗破坏的能力。杆件受力时内部产生的力叫<strong>内力</strong>，单位截面上的内力叫<strong>应力</strong>（σ = F / A）。<br>
+五种基本变形：<strong>拉伸、压缩、弯曲、剪切、扭转</strong>。<br>
+<em>关键结论</em>：同样材料，<strong>截面越大、形状越合理（如工字梁、空心管），抗弯能力越强</strong>——因为大部分材料被放到了离中性轴最远的地方。`,
+q:["为什么用空心管？","桁架为什么省料？"]},
+
+{id:"d5",t:"提高结构强度的方法",k:["提高强度","加强","截面","工字梁","三角形桁架","材料"],
+a:`<ul>
+<li><strong>改变截面形状</strong>——用空心管、工字梁、角钢，把材料放到远离中性轴处；</li>
+<li><strong>增加支撑与桁架</strong>——把弯矩转为拉压力；</li>
+<li><strong>合理选择材料</strong>——按受力性质选（受拉选钢材，抗压选混凝土）；</li>
+<li><strong>改善连接</strong>——节点加腋、加肋板、螺栓加垫片；</li>
+<li><strong>减小应力集中</strong>——孔口倒圆、避免尖角、变截面处加过渡。</li>
+</ul>`,
+q:["连接方式怎么选？","应力集中是什么？"]},
+
+{id:"d6",t:"结构的连接方式",k:["连接","铰连接","刚连接","螺栓","焊接","榫卯","胶接"],
+a:`分两大类：<br>
+<ul>
+<li><strong>铰连接（活动连接）</strong>——允许相对转动，如合页、销轴、铰链；特点：<em>只能传力不能传弯矩</em>，适合需要开合、折叠的结构。</li>
+<li><strong>刚连接（固定连接）</strong>——不允许相对运动，如焊接、铆接、螺栓紧固、榫卯、胶接；特点：<em>能传递力和弯矩</em>，结构整体性好。</li>
+</ul>
+选型口诀：<strong>要动就用铰，要稳就用刚，要拆就用螺栓</strong>。`,
+q:["榫卯为什么不用钉子？","焊接和螺栓怎么选？"]},
+
+/* ============ E. 流程与设计 ============ */
+{id:"e1",t:"流程、环节与时序",k:["流程","环节","时序","工序","先后顺序"],
+a:`<strong>流程</strong>是由若干<strong>环节</strong>按一定<strong>时序</strong>组成的活动过程。<br>
+<ul>
+<li><strong>环节</strong>——流程中相对独立的阶段，如\"备料—下料—组装—打磨—上漆\"；</li>
+<li><strong>时序</strong>——环节的先后顺序，有的可颠倒（并行），有的<strong>不可颠倒</strong>（如先装后漆）。</li>
+</ul>
+判断能不能并行，看<strong>是否存在依赖关系</strong>：后一环节是否必须以前一环节的产出为输入。`,
+q:["流程怎么表达？","流程优化怎么做？"]},
+
+{id:"e2",t:"流程的表达方式",k:["流程图","流程表达","方框图","文字表达","表格"],
+a:`三种表达：<strong>文字描述</strong>（适合简单流程）、<strong>方框流程图</strong>（最常用，方框+箭头）、<strong>表格</strong>（适合含时间/责任人的流程）。<br>
+画流程图的规范：<br>
+<ul>
+<li>用<strong>矩形</strong>表示环节，<strong>箭头</strong>表示时序；</li>
+<li>判断用<strong>菱形</strong>，起止用<strong>圆角框</strong>；</li>
+<li>箭头方向统一，尽量不交叉。</li>
+</ul>`,
+q:["流程图有什么规范？","怎么判断环节能否并行？"]},
+
+{id:"e3",t:"流程优化的目标与步骤",k:["流程优化","优化","提高效率","降低成本","工期"],
+a:`优化的目标只有三类：<strong>提高效率、降低成本、提升质量</strong>（有时还要兼顾安全与环保）。<br>
+标准步骤：<br>
+<ol>
+<li><strong>画出原流程</strong>，标出每个环节的<strong>耗时与成本</strong>；</li>
+<li><strong>找瓶颈</strong>——耗时最长或返工最多的环节；</li>
+<li><strong>提出改进</strong>：取消、合并、重排、简化（ECRS 四原则）；</li>
+<li><strong>验证</strong>——用新流程跑一遍，比较总耗时/成本；</li>
+<li><strong>固化</strong>——写成新规程。</li>
+</ol>
+<em>没有测量就没有优化</em>：优化前一定要有基线数据。`,
+q:["ECRS 四原则是什么？","瓶颈怎么找？"]},
+
+{id:"e4",t:"流程优化中的约束",k:["流程约束","不能优化","资源限制","工艺条件","安全"],
+a:`优化不是想怎么改就怎么改，四类约束必须守：<br>
+<ul>
+<li><strong>工艺约束</strong>——物理规律不允许（如混凝土必须养护到强度才能拆模）；</li>
+<li><strong>资源约束</strong>——设备、人力、场地有限；</li>
+<li><strong>成本约束</strong>——省了时间却大幅涨价，不划算；</li>
+<li><strong>安全与法规约束</strong>——不可为省工序而牺牲安全。</li>
+</ul>
+<em>好的优化是在约束内找最优，而不是无视约束</em>。`,
+q:["工期和成本冲突怎么办？","安全为什么是红线？"]},
+
+/* ============ F. 系统与设计 ============ */
+{id:"f1",t:"系统的含义与特性",k:["系统","系统特性","整体性","相关性","目的性","动态性","环境适应性"],
+a:`<strong>系统</strong>是由相互联系、相互作用的若干要素构成的、具有特定功能的有机整体。<br>
+五个特性：<br>
+<ul>
+<li><strong>整体性</strong>——整体功能大于部分之和（1+1&gt;2）；</li>
+<li><strong>相关性</strong>——要素之间相互影响，改一处会牵动全局；</li>
+<li><strong>目的性</strong>——系统为特定目标而存在；</li>
+<li><strong>动态性</strong>——系统在运动变化中；</li>
+<li><strong>环境适应性</strong>——系统要适应外部环境变化。</li>
+</ul>`,
+q:["什么是系统分析？","系统怎么优化？"]},
+
+{id:"f2",t:"系统分析的方法",k:["系统分析","分析方法","整体与部分","层次"],
+a:`系统分析四步：<br>
+<ol>
+<li><strong>明确目标</strong>——系统要达成什么；</li>
+<li><strong>划分要素与层次</strong>——把大系统拆成子系统；</li>
+<li><strong>分析相互关系</strong>——要素之间是串联、并联还是反馈；</li>
+<li><strong>综合权衡</strong>——局部最优不等于整体最优。</li>
+</ol>
+经典提醒：<em>把每个零件都做到最好，整机不一定最好</em>——这就是系统的整体性。`,
+q:["局部最优为什么不行？","系统边界怎么定？"]},
+
+{id:"f3",t:"系统的优化",k:["系统优化","优化目标","约束条件","多目标"],
+a:`系统优化 = <strong>在约束条件下，使目标函数达到最优</strong>。<br>
+关键三点：<br>
+<ul>
+<li><strong>目标要可量化</strong>——\"更好用\"不行，\"取放时间 ≤ 3 s\"才行；</li>
+<li><strong>约束要写清</strong>——预算、体积、功率、时间；</li>
+<li><strong>多目标要权衡</strong>——轻量与强度、成本与寿命往往冲突，需确定优先级。</li>
+</ul>`,
+q:["多目标冲突怎么办？","怎么量化\"好用\"？"]},
+
+/* ============ G. 控制与设计 ============ */
+{id:"g1",t:"控制与开环、闭环",k:["控制","开环","闭环","反馈","控制系统","自动控制"],
+a:`<strong>控制</strong>是使事物按预定方向变化的手段。<br>
+<ul>
+<li><strong>开环控制</strong>——无反馈，按预设程序执行，<em>不检测结果</em>。例：定时器浇花、洗衣机定时。<br>优点：结构简单、成本低；缺点：受干扰就跑偏。</li>
+<li><strong>闭环控制</strong>——有反馈，把<strong>输出量</strong>与<strong>给定量</strong>比较，用偏差去修正。例：空调恒温、水位自动控制。<br>优点：抗干扰、精度高；缺点：结构复杂、可能振荡。</li>
+</ul>
+判断口诀：<em>有没有\"检测—比较\"这一环，有就是闭环</em>。`,
+q:["反馈起什么作用？","开环控制什么时候够用？"]},
+
+{id:"g2",t:"控制系统的组成",k:["控制系统组成","传感器","控制器","执行器","被控对象","给定值"],
+a:`一个典型控制系统由五部分构成：<br>
+<ul>
+<li><strong>给定值</strong>——希望达到的目标；</li>
+<li><strong>传感器（检测装置）</strong>——测量实际值；</li>
+<li><strong>控制器</strong>——比较偏差、发出指令（单片机/PLC/继电器）；</li>
+<li><strong>执行器</strong>——执行动作（电机、电磁阀、加热丝）；</li>
+<li><strong>被控对象</strong>——被控制的事物（水箱、温室、小车）。</li>
+</ul>
+闭环还要加一条<strong>反馈通道</strong>，把输出送回比较环节。`,
+q:["传感器怎么选？","控制器用什么实现？"]},
+
+/* ============ H. 评价 / 人机 / 伦理 ============ */
+{id:"h1",t:"设计评价的多维标准",k:["评价","设计评价","评价标准","好设计","维度"],
+a:`评价一个设计，至少七个维度：<strong>功能达成、结构可靠、人机友好、工艺可行、成本合理、美观、可持续</strong>。<br>
+评价方法建议用<strong>量规（rubric）</strong>：每个维度分 3–4 级，写清\"达到什么水平得几分\"，避免\"我觉得挺好\"。<br>
+<em>自评 + 互评 + 师评</em>三方结合，才不至于自说自话。`,
+q:["量规怎么写？","创新性怎么评？"]},
+
+{id:"h2",t:"人机关系",k:["人机关系","人机","安全","健康","舒适","高效","尺寸"],
+a:`人机关系追求四个层次：<strong>安全 → 健康 → 舒适 → 高效</strong>（由低到高，安全是底线）。<br>
+要考虑的具体内容：<br>
+<ul>
+<li><strong>尺寸匹配</strong>——按人体尺寸百分位设计（如门高按 95 百分位，扶手按 50 百分位）；</li>
+<li><strong>操作姿势</strong>——避免长时间弯腰、抬手；</li>
+<li><strong>信息传达</strong>——按键大小、颜色对比、提示音；</li>
+<li><strong>特殊人群</strong>——老人、儿童、残障者的可达性。</li>
+</ul>`,
+q:["人机尺寸怎么查？","无障碍设计要注意什么？"]},
+
+{id:"h3",t:"技术伦理与知识产权",k:["伦理","知识产权","专利","抄袭","安全责任","可持续"],
+a:`做设计必须守住三条底线：<br>
+<ul>
+<li><strong>安全责任</strong>——不能为效果牺牲使用者安全，需做失效分析；</li>
+<li><strong>知识产权</strong>——引用他人方案要注明，模仿要有实质改进，申请专利前不公开关键细节；</li>
+<li><strong>可持续</strong>——考虑材料可回收、能耗、废弃物。</li>
+</ul>
+<em>技术是中性的，但用技术的人不是。</em>答辩时被问\"这个设计会不会被滥用\"，是常见考点。`,
+q:["专利怎么申请？","怎么判断是否抄袭？"]},
+
+{id:"h4",t:"如何写设计说明",k:["设计说明","说明书","写说明","文档","报告"],
+a:`设计说明的六段式：<br>
+<ol>
+<li><strong>问题与目标</strong>——为谁解决什么，量化指标；</li>
+<li><strong>调研与约束</strong>——已有方案、可用资源、限制条件；</li>
+<li><strong>方案与取舍</strong>——至少两个方案，说明为什么选这个；</li>
+<li><strong>结构与图样</strong>——三视图、轴测图、关键尺寸；</li>
+<li><strong>试验与数据</strong>——测什么、怎么测、结果如何；</li>
+<li><strong>改进与展望</strong>——还有什么不足、下一步怎么做。</li>
+</ol>
+<em>最加分的是第 3 段的\"取舍理由\"和第 6 段的\"承认不足\"</em>。`,
+q:["答辩会被问什么？","试验数据怎么呈现？"]},
+
+{id:"h5",t:"交流评价与答辩技巧",k:["答辩","汇报","展示","交流","讲解"],
+a:`答辩四件套：<strong>实物 + 图样 + 数据 + 故事</strong>。<br>
+<ul>
+<li>开场 30 秒讲清\"为谁解决了什么\"，别从\"我们组有几个人\"讲起；</li>
+<li>重点讲<strong>一次失败与如何修正</strong>，比讲成功更能体现工程思维；</li>
+<li>数据要具体：\"承重从 82 N 提升到 131 N\"优于\"承重提高了不少\"；</li>
+<li>被质疑时先承认局限，再说改进方向，不要辩解。</li>
+</ul>`,
+q:["怎么讲失败经历？","被问到不会的怎么办？"]}
+];
+
+/* ============ 设计工坊：五阶段脚手架 ============ */
+const STAGES = [
+ {t:"发现与明确问题", q:"你想解决<strong>谁</strong>、在<strong>什么情境</strong>下的<strong>什么麻烦</strong>？现在他们是怎么凑合解决的？",
+  c:["写清了具体使用者和使用场景","有真实观察或访谈作为依据，不是凭空想的","能用一句话说清\"痛点\"，且这个痛点是可被设计解决的"]},
+ {t:"明确设计要求", q:"把\"人—机—物—环\"和\"成本/工期/安全\"逐条写出来，哪些是<strong>必须满足</strong>，哪些是<strong>最好满足</strong>？",
+  c:["列出了功能与性能的可量化指标","写明了尺寸、材料、预算、工期的限制","标出了不可逾越的安全红线"]},
+ {t:"方案构思与比较", q:"至少写出<strong>两个原理不同</strong>的方案，并说明你最终选哪个、为什么。",
+  c:["两个方案的实现原理确实不同，不是同一方案的粗细版本","用评价矩阵或明确理由做了比较","对落选方案的优点有交代（可否合并）"]},
+ {t:"制作与试验", q:"你打算做哪种模型/原型？用什么<strong>试验</strong>验证哪个<strong>指标</strong>？变量怎么控制？",
+  c:["说明了模型类型（概念/结构/功能/展示）及理由","试验有明确的自变量、因变量、控制变量","计划了重复次数与记录方式"]},
+ {t:"优化与评价", q:"试验结果告诉你什么？你改了哪里？怎么判断改成功了？",
+  c:["用数据说明改进前后的差异","改进针对的是试验暴露的真实问题","给出了下一步还可优化的方向"]}
+];
+
+/* ============ 方案诊断：六维量规 ============ */
+const DIMS = [
+ {n:"结构与稳定性", k:["重心","支撑","底座","三角","稳定","倾","加固","斜撑","配重"], tip:"补写结构的稳定性考虑：重心高度、支撑面大小、是否加了三角斜撑，以及\"重力作用线是否落在支撑面内\"的判断。"},
+ {n:"强度与连接", k:["强度","受力","连接","螺栓","焊接","榫","铰","截面","桁架","肋"], tip:"补写强度与连接：主要受力方向是什么、用什么连接方式（刚连接还是铰连接）、节点如何避免应力集中。"},
+ {n:"材料与工艺", k:["材料","木","铝","亚克力","钢","3D打印","加工","工艺","切割","打磨","注塑"], tip:"补写材料与工艺：为什么选这种材料（按受力/成本/加工性说明），以及关键件怎么加工、精度如何保证。"},
+ {n:"尺寸与图样", k:["尺寸","长","宽","高","毫米","mm","三视图","图纸","标注","比例","φ","R"], tip:"补写尺寸与图样：给出关键尺寸（含单位）、至少一张三视图或轴测图，并标注定位尺寸与定形尺寸。"},
+ {n:"成本与资源", k:["成本","预算","元","价格","采购","工时","耗时","材料费"], tip:"补写成本与资源：列出材料清单与单价、总预算、制作工时，说明在预算内如何取舍。"},
+ {n:"安全与人机", k:["安全","圆角","倒角","人机","防滑","承重","防护","儿童","老人","误操作"], tip:"补写安全与人机：边角处理、防误操作、承重余量、目标人群的人体尺寸匹配。"}
+];
+
+/* ============ 技术试验向导 ============ */
+const EXPS = {
+ structure:{n:"结构承重试验",ind:"支撑柱数量 / 截面尺寸",dep:"承重极限（N）",ctl:["材料与截面","加载位置与速度","环境温度"],tool:"电子秤 + 砝码（或弹簧测力计）"},
+ material:{n:"材料性能对比试验",ind:"材料种类（木/铝/亚克力）",dep:"断裂载荷（N）或变形量（mm）",ctl:["试件尺寸","加载方式","含水率"],tool:"游标卡尺 + 砝码组"},
+ stability:{n:"稳定性倾角试验",ind:"重心高度 / 底座宽度",dep:"临界倾角（°）",ctl:["总质量","接触面材质","加载位置"],tool:"量角器 + 可调斜面"},
+ control:{n:"控制灵敏度试验",ind:"阈值设定值",dep:"响应时间（s）/ 超调量",ctl:["初始条件","环境温度","供电电压"],tool:"秒表 + 温度计（或万用表）"}
+};
+
+
+/* 知识库扩展包：口语同义词表 + 新增 45 个知识点
+   由 build.py 拼接在 data.js 之后。KB 是 const 数组，此处用 push 追加。 */
+
+/* ---------------- 口语同义词表：把学生的说法映射到课程术语 ---------------- */
+const SYN = [
+  { to: ["稳定性", "重心", "支撑面"], from: ["晃", "摇晃", "晃悠", "不稳", "站不住", "站不稳", "倒", "倾倒", "翻倒", "一推就", "摇晃"] },
+  { to: ["强度", "内力", "截面", "弯曲"], from: ["结实", "牢固", "扛得住", "承重", "压不坏", "断", "折断", "裂", "变形", "弯了", "塌"] },
+  { to: ["人机关系", "舒适", "尺寸"], from: ["烫手", "烫", "硌手", "硌", "累手", "别扭", "不舒服", "够不着", "太矮", "太高", "刺眼", "扎手"] },
+  { to: ["三视图", "长对正", "投影"], from: ["看图", "画图", "图纸", "立体图画平面", "补线", "画不出来", "看不懂图"] },
+  { to: ["尺寸标注"], from: ["标注", "标尺寸", "写数字", "标多少"] },
+  { to: ["流程", "环节", "时序"], from: ["顺序", "先后", "步骤", "工序", "流程", "先后次序"] },
+  { to: ["闭环", "反馈"], from: ["自动调节", "恒温", "自动控制", "自己调", "反馈"] },
+  { to: ["技术试验", "变量"], from: ["实验", "测试", "测一下", "试试", "对比一下", "验证"] },
+  { to: ["成本", "预算"], from: ["省钱", "便宜", "贵", "预算", "经费", "花多少钱"] },
+  { to: ["材料与工艺"], from: ["用什么材料", "木头", "铝", "亚克力", "3D打印", "加工", "怎么做出来"] },
+  { to: ["连接方式"], from: ["怎么固定", "怎么装", "螺丝", "焊接", "胶水", "合页", "铰链"] },
+  { to: ["设计的一般过程"], from: ["从哪开始", "第一步", "怎么做设计", "设计步骤", "整个流程"] },
+  { to: ["方案构思"], from: ["想不出", "没想法", "怎么想", "创意", "点子"] },
+  { to: ["学业质量", "评价"], from: ["考试", "考什么", "怎么评分", "打分", "期末"] },
+  { to: ["系统", "整体性"], from: ["整体", "局部最优", "各管各的", "系统"] },
+  { to: ["模型", "原型"], from: ["做出来", "打样", "样品", "模型"] },
+  { to: ["安全", "人机关系"], from: ["危险", "割手", "安全", "防护", "会不会伤"] }
+];
+
+/* ---------------- 新增知识点 ---------------- */
+KB.push(
+
+/* ===== 设计过程 ===== */
+{id:"n1",t:"怎样写设计任务陈述",k:["设计任务陈述","任务书","需求描述","一句话说清"],s:["要做什么","任务是什么"],
+a:`把你的想法压缩成<strong>一句话</strong>，句式固定：<br>
+<code>为【谁】，在【什么情境】下，解决【什么问题】，满足【什么要求】。</code><br>
+例：\"为<em>住宿的高一学生</em>，在<em>晚自习后食堂已关门</em>的情境下，解决<em>吃不上热饭</em>的问题，满足<em>10 分钟内加热、体积不超过饭盒、成本 50 元内</em>的要求。\"<br>
+这句话写不出来，说明问题还没<strong>明确</strong>，别急着画图。`,
+q:["明确设计要求要写哪些","怎么发现问题","用户调研怎么做"]},
+
+{id:"n2",t:"用户调研怎么做",k:["用户调研","调研","访谈","问卷","观察法"],s:["问谁","怎么了解需求"],
+a:`三种方法各有适用场景：<br>
+<ul>
+<li><strong>观察法</strong>——直接看他怎么做，最真实，能发现\"嘴上不说但实际很烦\"的点；</li>
+<li><strong>访谈</strong>——问\"上一次遇到这个问题是什么时候、当时怎么解决的\"，<em>问事实，别问意见</em>；</li>
+<li><strong>问卷</strong>——只适合验证已经形成的假设，样本要够。</li>
+</ul>
+<em>最常见的错误</em>：问\"你想要什么功能\"。用户给的是方案，不是需求。要问的是\"你上次为什么放弃用它\"。`,
+q:["怎么把需求变成指标","场景观察怎么做"]},
+
+{id:"n3",t:"场景观察法",k:["场景观察","使用场景","情境"],s:["在什么情况下用","使用环境"],
+a:`把使用过程拆成四段，逐段记录：<strong>取出 → 准备 → 使用 → 收纳</strong>。<br>
+每段问三件事：<em>用了多久？手在干什么？哪里别扭？</em><br>
+很多设计缺陷不在\"用的时候\"，而在\"准备\"和\"收纳\"这两段——比如折叠椅展开要 40 秒，用一次就不想再用了。`,
+q:["怎么把需求变成指标","人机关系要注意什么"]},
+
+{id:"n4",t:"需求优先级怎么排",k:["需求优先级","必须满足","最好满足","MoSCoW","取舍"],s:["哪个重要","先做哪个"],
+a:`用四档分类，别用\"重要/不重要\"：<br>
+<ul>
+<li><strong>必须有</strong>——不满足就失败（安全、核心功能）；</li>
+<li><strong>应该有</strong>——影响体验，缺了会被抱怨；</li>
+<li><strong>可以有</strong>——加分项，资源够才做；</li>
+<li><strong>这次不做</strong>——明确写下来，防止范围失控。</li>
+</ul>
+答辩时被问\"为什么没做某个功能\"，答\"它属于这次不做，理由是工期\"，比\"来不及\"专业得多。`,
+q:["设计约束有哪些","成本和工期怎么权衡"]},
+
+{id:"n5",t:"设计约束清单",k:["设计约束","限制条件","边界条件"],s:["有什么限制","条件"],
+a:`六类约束，逐条写：<strong>尺寸</strong>（放得下吗）、<strong>重量</strong>（拿得动吗）、<strong>成本</strong>（买得起吗）、<strong>工期</strong>（来得及吗）、<strong>工艺</strong>（做得出来吗）、<strong>法规与安全</strong>（允许吗）。<br>
+<em>约束不是障碍，是让方案收敛的条件</em>。没有约束的设计题，最后一定写成作文。`,
+q:["需求优先级怎么排","材料怎么选"]},
+
+{id:"n6",t:"方案草图怎么画",k:["草图","构思草图","设计草图","手绘"],s:["画草图","随手画"],
+a:`三级别画，别一上来就画精细图：<br>
+<ol>
+<li><strong>概念草图</strong>——30 秒一张，只画原理，一次画 5 张以上；</li>
+<li><strong>结构草图</strong>——标出主要尺寸、连接方式、运动关系；</li>
+<li><strong>表现图</strong>——给答辩看，加阴影和材质。</li>
+</ol>
+<em>草图的价值在数量，不在好看</em>。画 20 张才挑得出 1 张。`,
+q:["方案怎么比较","三视图怎么画"]},
+
+{id:"n7",t:"设计日志怎么写",k:["设计日志","过程记录","学习记录"],s:["记录什么","日志"],
+a:`每次课后 5 分钟，写四行就够：<br>
+<strong>今天做了什么 → 遇到什么问题 → 怎么解决的 → 下次做什么。</strong><br>
+附一张当天最有代表性的照片或草图。<br>
+<em>设计日志是过程性评价最有力的证据</em>：它能证明方案是你迭代出来的，而不是最后一晚想出来的。`,
+q:["怎么做方案答辩","设计说明怎么写"]},
+
+{id:"n8",t:"方案答辩怎么讲",k:["答辩","汇报","展示","讲解","交流评价"],s:["怎么讲","上台说"],
+a:`四件套：<strong>实物 + 图样 + 数据 + 故事</strong>。<br>
+<ul>
+<li>开场 30 秒讲\"为谁解决了什么\"，不要从\"我们组有几个人\"讲起；</li>
+<li>重点讲<strong>一次失败和如何修正</strong>，比讲成功更能体现工程思维；</li>
+<li>数据要具体：\"承重从 82 N 到 131 N\"优于\"提高了不少\"；</li>
+<li>被质疑时先承认局限，再说改进方向。</li>
+</ul>`,
+q:["设计说明怎么写","试验数据怎么呈现"]},
+
+/* ===== 结构（口语场景） ===== */
+{id:"n9",t:"书架、桌子老是晃怎么办",k:["书架晃","桌子晃","柜子不稳","家具晃动","加固"],s:["晃","摇晃","不稳","站不稳","书架","桌子","柜子","家具"],
+a:`先判断是<strong>稳定性</strong>问题还是<strong>刚度</strong>问题：<br>
+<ul>
+<li>整体<strong>倾倒</strong>——稳定性问题：重心偏高、支撑面太小。对策：<strong>降低重心、加大底座、靠墙固定</strong>。</li>
+<li>整体不倒也晃——<strong>刚度</strong>不足：节点会转动。对策：<strong>加斜撑把矩形变三角形</strong>，或在背板加 X 形拉条。</li>
+</ul>
+<em>八成的情况是后者</em>：一个矩形框架在侧向力下必然变形，加一根斜撑立刻见效，成本几乎为零。`,
+q:["三角形为什么稳定","稳定性和强度有什么区别","连接方式怎么选"]},
+
+{id:"n10",t:"椅子坐着不舒服怎么改",k:["椅子不舒服","坐姿","座椅设计","人体尺寸"],s:["坐着累","腰疼","不舒服"],
+a:`按人机关系四层次逐条查：<br>
+<ul>
+<li><strong>安全</strong>——承重够吗？有无夹手缝隙？</li>
+<li><strong>健康</strong>——座高是否让大腿水平、小腿垂直？座深是否压迫膝窝？</li>
+<li><strong>舒适</strong>——靠背是否有腰托？坐面是否前高后低？</li>
+<li><strong>高效</strong>——起身是否要挪动？</li>
+</ul>
+<em>先量三个尺寸：座高、座深、靠背高</em>，对照人体尺寸百分位表，问题往往一眼就看出来。`,
+q:["人机关系要注意什么","人体尺寸怎么查"]},
+
+{id:"n11",t:"悬挑结构为什么容易断",k:["悬挑","悬臂","挑出","阳台","外伸"],s:["伸出去","悬空"],
+a:`悬臂梁的<strong>根部弯矩最大</strong>，越往外越不吃力。<br>
+所以：<br>
+<ul>
+<li>根部截面要加高（不是加宽）；</li>
+<li>受拉侧（上部）必须有足够的材料或拉杆；</li>
+<li>悬挑长度翻倍，根部弯矩<strong>翻四倍</strong>——这就是为什么阳台不能随便加长。</li>
+</ul>`,
+q:["提高强度的方法","应力集中是什么"]},
+
+{id:"n12",t:"三角形为什么稳定",k:["三角形稳定","几何不变","桁架"],s:["三角","为什么稳"],
+a:`三角形是<strong>几何不变体系</strong>：三边长度定了，形状就唯一确定，没有可以转动的自由度。<br>
+四边形不同——四边定了，还能压成菱形（<strong>几何可变</strong>）。<br>
+所以工程上：<strong>矩形框架必须加一根斜撑</strong>才稳定，桁架全部由三角形组成正是这个道理。`,
+q:["书架晃怎么办","结构类型有哪些"]},
+
+{id:"n13",t:"重心与稳定性的关系",k:["重心","重心高度","稳定条件","重力作用线"],s:["重心在哪","越低越稳"],
+a:`稳定的判据只有一条：<strong>重力作用线是否落在支撑面内</strong>。<br>
+<ul>
+<li>重心越低，倾覆所需的角度越大；</li>
+<li>支撑面越宽，重力作用线越不容易跑出去；</li>
+<li>重心高但支撑面大的（如不倒翁），也能稳。</li>
+</ul>
+<em>常见误区</em>：只降重心不加支撑面。桌面加配重却仍然窄，一推还是倒。`,
+q:["怎么提高稳定性","支撑面和接触面有什么区别"]},
+
+{id:"n14",t:"支撑面和接触面有什么区别",k:["支撑面","接触面","支撑范围"],s:["底面","接触"],
+a:`<strong>接触面</strong>是物体与地面真正贴合的那部分；<strong>支撑面</strong>是<em>支撑点连线所围成的区域</em>。<br>
+例：四条腿的桌子，支撑面是四个着地点围成的矩形，<strong>不是桌腿的截面积</strong>。<br>
+所以把桌腿向外撇，接触面积没变，支撑面却变大了——稳定性立刻提升。`,
+q:["重心与稳定性的关系","书架晃怎么办"]},
+
+{id:"n15",t:"材料怎么选",k:["材料选择","选材料","木","铝","亚克力","3D打印"],s:["用什么材料","材料"],
+a:`按四个指标权衡：<strong>强度/重量比、加工难度、成本、外观</strong>。<br>
+<ul>
+<li><strong>椴木层板</strong>——易加工、便宜、质感好，适合承重框架；</li>
+<li><strong>铝合金型材</strong>——强度重量比高，可拆装，适合承力件；</li>
+<li><strong>亚克力</strong>——透明美观，但脆、易划伤，只适合外壳面板；</li>
+<li><strong>3D 打印（PLA/PETG）</strong>——适合复杂小零件，层间强度弱，<em>不要用于主要承力件</em>。</li>
+</ul>`,
+q:["常用连接件有哪些","提高强度的方法"]},
+
+{id:"n16",t:"常用连接件怎么选",k:["连接件","角码","合页","螺栓","螺母","卡扣"],s:["怎么固定","固定件"],
+a:`<ul>
+<li><strong>角码 + 自攻螺丝</strong>——木框架最常用，便宜；</li>
+<li><strong>合页（铰链）</strong>——需要开合的部位，属<em>铰连接</em>；</li>
+<li><strong>螺栓 + 螺母</strong>——需要拆装、承力大的部位；</li>
+<li><strong>卡扣/磁吸</strong>——需要快拆的面板。</li>
+</ul>
+选型口诀：<strong>要动就用铰，要稳就用刚，要拆就用螺栓</strong>。`,
+q:["连接方式怎么选","材料怎么选"]},
+
+{id:"n17",t:"应力集中是什么",k:["应力集中","孔口","尖角","倒圆"],s:["为什么会从孔那里裂","裂开"],
+a:`构件在<strong>形状突变处</strong>（孔、槽、尖角、截面突变）应力会急剧升高，常达平均应力的 2–3 倍，这就是<strong>应力集中</strong>。<br>
+多数断裂都从这里开始。<br>
+对策：<strong>孔口倒圆、尖角改圆角、截面变化处加过渡</strong>。一个 R2 的圆角，可能比加厚 1 mm 更有效。`,
+q:["提高强度的方法","疲劳是什么"]},
+
+{id:"n18",t:"疲劳是什么",k:["疲劳","寿命","反复受力"],s:["用久了断","反复"],
+a:`构件在<strong>远低于强度的反复荷载</strong>下，经过多次循环后突然断裂，叫<strong>疲劳破坏</strong>。<br>
+特点：<em>没有明显变形，断得很突然</em>。<br>
+对策：降低应力集中、避免尖锐缺口、选用韧性材料、留足安全余量。`,
+q:["应力集中是什么","安全设计要注意什么"]},
+
+/* ===== 图样 ===== */
+{id:"n19",t:"三视图缺线怎么补",k:["补线","缺线","补画","三视图补线"],s:["少一条线","补上","对不上"],
+a:`三步法：<br>
+<ol>
+<li><strong>先补可见轮廓</strong>——按\"长对正、高平齐、宽相等\"把主视图的每条线投到另外两个视图；</li>
+<li><strong>再补不可见轮廓</strong>——内部结构（孔、槽）在另外视图中画<strong>虚线</strong>；</li>
+<li><strong>最后核对</strong>——每个特征在三个视图中都应有交代，缺一个就是漏画。</li>
+</ol>
+<em>判断标准</em>：任意一条轮廓线，在另外两个视图里都能找到对应的投影。找不到，就是缺线。`,
+q:["三视图的投影规律","虚线和实线怎么分"]},
+
+{id:"n20",t:"六个基本视图",k:["基本视图","六视图","仰视图","右视图","后视图"],s:["还有别的视图吗"],
+a:`三视图之外，还有<strong>右视图、仰视图、后视图</strong>，合称六个基本视图。<br>
+配置关系依旧是\"长对正、高平齐、宽相等\"：<br>
+<ul><li>主、俯、仰、后——<strong>长对正</strong>；</li>
+<li>主、左、右、后——<strong>高平齐</strong>；</li>
+<li>俯、仰、左、右——<strong>宽相等</strong>。</li></ul>
+一般零件三视图就够，<em>只有形状在某一方向不对称时才需要补充视图</em>。`,
+q:["三视图的投影规律","剖面图是什么"]},
+
+{id:"n21",t:"剖面图是什么",k:["剖面图","剖视图","剖切"],s:["里面看不见","剖开"],
+a:`当内部结构复杂、虚线太多看不清时，用假想平面把物体<strong>剖开</strong>，画出剩下部分的视图，叫<strong>剖视图</strong>。<br>
+规则：<br>
+<ul>
+<li>剖切平面<strong>后面</strong>的可见轮廓全部画出；</li>
+<li>剖面区域画<strong>剖面线</strong>（45° 细实线）；</li>
+<li>剖切位置在主视图上用<strong>剖切符号</strong>标出并注字母。</li>
+</ul>`,
+q:["三视图缺线怎么补","六个基本视图"]},
+
+{id:"n22",t:"尺寸基准怎么定",k:["尺寸基准","基准","定位尺寸"],s:["从哪量","基准面"],
+a:`<strong>基准</strong>是标注尺寸的起点。优先选：<strong>底面、对称中心面、主要加工面、轴线</strong>。<br>
+原则：<br>
+<ul>
+<li>同一方向的尺寸尽量<strong>从同一基准</strong>出发，避免尺寸链累积误差；</li>
+<li>不要形成<strong>封闭尺寸链</strong>（一环应留空）；</li>
+<li>功能尺寸从设计基准标，加工尺寸从工艺基准标。</li>
+</ul>`,
+q:["尺寸标注的三要素","尺寸标注常见错误"]},
+
+{id:"n23",t:"图纸比例怎么选",k:["比例","图纸比例","1:1"],s:["按几比几画"],
+a:`优先用 <strong>1:1</strong>，直观且不易出错。<br>
+放不下时按国标系列缩小：1:2、1:5、1:10；太小需要放大时用 2:1、5:1。<br>
+<em>注意</em>：图上标注的<strong>永远是实际尺寸</strong>，与比例无关——这是初学者最常犯的错。`,
+q:["尺寸标注的三要素","三视图怎么画"]},
+
+/* ===== 流程 ===== */
+{id:"n24",t:"工序与工步的区别",k:["工序","工步","工艺过程"],s:["工序是什么"],
+a:`<strong>工序</strong>是工艺过程中<em>相对独立、不换工作地</em>的一段；<strong>工步</strong>是工序内<em>不换刀具、不换加工表面</em>的一次操作。<br>
+例：\"下料\"是一道工序，其中\"划线—锯切—锉平\"是三个工步。<br>
+写流程图时，<strong>用工序作环节</strong>就够，不必细到工步。`,
+q:["流程、环节与时序","工时怎么估算"]},
+
+{id:"n25",t:"并行工序怎么判断",k:["并行","串行","同时进行","能否同时做"],s:["能不能一起做"],
+a:`判断依据只有一个：<strong>后一环节是否必须以前一环节的产出为输入</strong>。<br>
+<ul>
+<li>必须先做——<strong>串行</strong>，如先组装后喷漆；</li>
+<li>互不依赖——<strong>并行</strong>，如外壳加工与电路焊接可同时进行。</li>
+</ul>
+找出可以并行的环节，往往是<strong>缩短工期最有效的手段</strong>，而且不增加成本。`,
+q:["流程优化怎么做","工时怎么估算"]},
+
+{id:"n26",t:"工时怎么估算",k:["工时","工期","估时","时间估算"],s:["要多久","几天能做完"],
+a:`用<strong>三点估算法</strong>，比拍脑袋准：<br>
+<code>预期工时 = (最乐观 + 4×最可能 + 最悲观) / 6</code><br>
+再把各环节的预期工时相加，乘一个 <strong>1.2–1.3 的缓冲系数</strong>（应对返工与意外）。<br>
+<em>经验</em>：制作环节的返工率通常最高，估时要留够。`,
+q:["并行工序怎么判断","流程优化怎么做"]},
+
+{id:"n27",t:"ECRS 四原则",k:["ECRS","取消","合并","重排","简化"],s:["怎么简化流程"],
+a:`流程优化的四个动作，按顺序试：<br>
+<ul>
+<li><strong>E 取消</strong>——这一步真的必要吗？能不能不做？</li>
+<li><strong>C 合并</strong>——两个环节能否并成一次？</li>
+<li><strong>R 重排</strong>——顺序换一下会不会更顺？</li>
+<li><strong>S 简化</strong>——能不能用更简单的办法达到同样效果？</li>
+</ul>
+<em>先想"取消"，再想"简化"</em>——多数人一上来就琢磨怎么把现有步骤做快，其实那一步本可以不必要。`,
+q:["流程优化怎么做","并行工序怎么判断"]},
+
+/* ===== 系统与控制 ===== */
+{id:"n28",t:"系统边界怎么划",k:["系统边界","边界","子系统"],s:["算不算系统里"],
+a:`<strong>系统边界</strong>决定什么在系统内、什么属于环境。<br>
+划法：<strong>把你能控制的部分划进来，把只能适应的部分放到外面</strong>。<br>
+例：设计一个恒温花房，加热器、传感器、控制器在边界内；室外气温、供电稳定性属于环境（只能应对，不能控制）。<br>
+<em>边界划错，分析一定跑偏</em>——把不可控因素当内部变量，方案就会失效。`,
+q:["什么是系统分析","系统的优化怎么做"]},
+
+{id:"n29",t:"反馈为什么会振荡",k:["振荡","超调","反馈过度","来回波动"],s:["忽冷忽热","抖","反复"],
+a:`闭环控制里，如果<strong>修正过猛</strong>或<strong>延迟过大</strong>，输出会在目标值两侧来回摆动，叫<strong>振荡</strong>。<br>
+原因有三：<strong>增益太大、响应滞后、采样太慢</strong>。<br>
+对策：减小修正幅度（<strong>加阻尼</strong>）、缩短检测延迟、引入<strong>死区</strong>（允许小偏差不动作）。<br>
+<em>空调忽冷忽热、水温忽高忽低，都是这一类问题。</em>`,
+q:["闭环控制是什么","阈值怎么设"]},
+
+{id:"n30",t:"阈值和死区怎么设",k:["阈值","死区","滞回","设定值"],s:["什么时候启动","临界值"],
+a:`<strong>阈值</strong>是触发动作的界限值；<strong>死区（滞回）</strong>是上下两个阈值之间的缓冲带。<br>
+例：水箱低于 30% 启动进水，高于 90% 停止——中间 60% 就是死区。<br>
+<em>没有死区会怎样</em>：在临界点附近频繁启停，设备寿命骤降。`,
+q:["反馈为什么会振荡","闭环控制是什么"]},
+
+{id:"n31",t:"传感器怎么选",k:["传感器","检测装置","温度传感器","光敏","红外","超声波"],s:["用什么测","怎么检测"],
+a:`按被测物理量对号入座：<br>
+<ul>
+<li><strong>温度</strong>——DS18B20（数字，精度 0.5℃）、热敏电阻（便宜，需标定）；</li>
+<li><strong>光照</strong>——光敏电阻、BH1750（数字照度）；</li>
+<li><strong>距离</strong>——超声波 HC-SR04、红外避障；</li>
+<li><strong>人体</strong>——PIR 热释电红外。</li>
+</ul>
+选型看三点：<strong>量程、精度、输出接口</strong>（模拟量还是数字量）。`,
+q:["控制系统由什么组成","单片机怎么入门"]},
+
+{id:"n32",t:"单片机怎么入门",k:["单片机","Arduino","控制实现","编程控制"],s:["怎么让它自动","用什么板子"],
+a:`通用技术课上的控制装置，用 <strong>Arduino</strong> 最合适：开源、资料多、接线简单。<br>
+最小系统三件事：<br>
+<ol>
+<li><strong>读输入</strong>——<code>analogRead()</code> 或 <code>digitalRead()</code>；</li>
+<li><strong>做判断</strong>——<code>if (温度 &lt; 30) { ... }</code>；</li>
+<li><strong>给输出</strong>——<code>digitalWrite()</code> 驱动继电器或电机。</li>
+</ol>
+<em>先做开环</em>（定时浇水），跑通后再加传感器做成闭环。`,
+q:["开环和闭环的区别","传感器怎么选"]},
+
+/* ===== 评价与伦理 ===== */
+{id:"n33",t:"评价量规怎么写",k:["量规","rubric","评分标准","评价表"],s:["怎么打分","评分表"],
+a:`量规 = <strong>维度 × 等级 × 描述</strong>。<br>
+例（结构设计维度）：<br>
+<ul>
+<li><strong>优秀</strong>——受力分析正确，节点构造合理，有试验数据支撑；</li>
+<li><strong>合格</strong>——结构能站住，无明显缺陷，但未做受力分析；</li>
+<li><strong>待改进</strong>——结构不稳或无法承受设计荷载。</li>
+</ul>
+<em>关键</em>：每一级都用<strong>可观察的行为</strong>描述，不用"较好""一般"这类模糊词。`,
+q:["设计评价的多维标准","创新性怎么体现"]},
+
+{id:"n34",t:"创新性怎么体现",k:["创新","创新性","有新意","原创"],s:["怎么算创新","跟别人不一样"],
+a:`创新不等于"从没出现过"，四种层次都算：<br>
+<ol>
+<li><strong>原理创新</strong>——用全新原理解决问题（最难）；</li>
+<li><strong>结构创新</strong>——原理相同，结构重新组合；</li>
+<li><strong>组合创新</strong>——把两个已有功能合到一件东西上；</li>
+<li><strong>适用性创新</strong>——把成熟方案移植到新人群/新场景（最容易做出成果）。</li>
+</ol>
+<em>答辩时要说清"新在哪、比原来好多少"</em>，用数据说话，别只说"我们加了智能"。`,
+q:["方案怎么比较","知识产权要注意什么"]},
+
+{id:"n35",t:"可持续设计要考虑什么",k:["可持续","环保","可回收","能耗","绿色设计"],s:["环保","浪费"],
+a:`三个层面：<br>
+<ul>
+<li><strong>材料</strong>——优先可回收、单一材质（混合材料难回收）；</li>
+<li><strong>能耗</strong>——待机功耗、使用能耗；</li>
+<li><strong>寿命</strong>——可维修、可更换易损件，比"用更久"更现实。</li>
+</ul>
+<em>可拆卸设计</em>是可持续设计最实用的抓手：能拆开，才能修、才能分类回收。`,
+q:["知识产权要注意什么","材料怎么选"]},
+
+{id:"n36",t:"知识产权与专利",k:["知识产权","专利","抄袭","侵权","引用"],s:["会不会抄","能不能申请专利"],
+a:`三条底线：<br>
+<ul>
+<li><strong>引用要注明</strong>——用别人的方案、图、数据，标清来源；</li>
+<li><strong>模仿要有实质改进</strong>——只换颜色不算创新；</li>
+<li><strong>申请专利前别公开</strong>——先公开关键细节会丧失新颖性。</li>
+</ul>
+专利三性：<strong>新颖性、创造性、实用性</strong>。学生作品多为实用新型。`,
+q:["创新性怎么体现","方案答辩怎么讲"]},
+
+{id:"n37",t:"安全设计要注意什么",k:["安全设计","防护","圆角","警示","误操作"],s:["怎么才安全","会不会伤到人"],
+a:`五条硬要求：<br>
+<ul>
+<li><strong>边角倒圆</strong>——所有可触及的边角 R≥2 mm；</li>
+<li><strong>防误操作</strong>——关键动作需两步确认，或加防护盖；</li>
+<li><strong>承重余量</strong>——设计荷载取实际使用的 2 倍以上；</li>
+<li><strong>电气安全</strong>——金属外壳接地、强弱电分离；</li>
+<li><strong>警示标识</strong>——高温、夹手、带电部位必须有标识。</li>
+</ul>
+<em>做失效分析</em>：假设它坏了，最坏会怎样？能不能接受？`,
+q:["人机关系要注意什么","疲劳是什么"]},
+
+/* ===== 学习方法 ===== */
+{id:"n38",t:"通用技术怎么复习",k:["复习","考试题型","怎么考","考点"],s:["考试","考什么","怎么复习"],
+a:`考试就三类题，各有套路：<br>
+<ol>
+<li><strong>识图题</strong>——三视图补线、尺寸标注改错。靠练，每天 5 道，一周见效；</li>
+<li><strong>分析题</strong>——给一个结构/流程/控制系统，问"哪里不合理、怎么改"。答题模板：<em>指出问题 → 说明原理 → 给出改法 → 说明效果</em>；</li>
+<li><strong>设计题</strong>——按设计的一般过程五步写，<strong>评分点几乎全在"明确要求"和"方案比较"</strong>，画图只占小头。</li>
+</ol>`,
+q:["三视图缺线怎么补","设计的一般过程是什么"]},
+
+{id:"n39",t:"小组合作怎么分工",k:["小组","分工","合作","团队"],s:["几个人怎么分","组员不干活"],
+a:`按<strong>职能</strong>分，不按"你做这块我做那块"分：<br>
+<ul>
+<li><strong>设计负责人</strong>——统筹方案与图纸一致性；</li>
+<li><strong>制作负责人</strong>——工艺与材料；</li>
+<li><strong>试验负责人</strong>——数据与记录；</li>
+<li><strong>文档负责人</strong>——设计日志、说明书、答辩 PPT。</li>
+</ul>
+每人都有跨职能的活，避免"我只负责画图"。<strong>每次课后同步一次进度</strong>，比最后合并省事得多。`,
+q:["方案答辩怎么讲","设计日志怎么写"]},
+
+/* ===== 更多口语场景 ===== */
+{id:"n40",t:"水杯太烫手怎么改进",k:["水杯烫手","杯壁烫","隔热","握持"],s:["烫手","拿不住","太烫"],
+a:`先分清是<strong>传导</strong>还是<strong>对流</strong>：<br>
+<ul>
+<li>杯壁烫——<strong>传导</strong>：加隔热层（双层壁、硅胶套）、改用低导热材料（陶瓷/玻璃优于金属）；</li>
+<li>杯口冒热气烫手——<strong>对流</strong>：加杯盖、改杯口形状。</li>
+</ul>
+再查<strong>人机</strong>：握持处直径 30–40 mm 最舒适，太粗握不住，太细压手。<br>
+<em>评价改进效果</em>：测杯壁外表面温度，目标 ≤ 45 ℃。`,
+q:["人机关系要注意什么","材料怎么选"]},
+
+{id:"n41",t:"书包太重怎么改进",k:["书包重","背负","减负","肩带"],s:["压肩","太重","背不动"],
+a:`从三个方向动手：<br>
+<ul>
+<li><strong>减重</strong>——材料替换（如用蜂窝板做背板）、结构镂空；</li>
+<li><strong>传力</strong>——把重量从肩部转到<strong>胯部</strong>（加腰带），这是登山包的核心原理；</li>
+<li><strong>人机</strong>——肩带加宽到 50 mm 以上、加胸扣防滑落、背板贴合脊柱曲线。</li>
+</ul>
+<em>可量化指标</em>：肩部压强（N/cm²）降低多少。`,
+q:["人机关系要注意什么","设计任务陈述怎么写"]},
+
+{id:"n42",t:"台灯刺眼怎么办",k:["台灯","刺眼","眩光","照度","护眼"],s:["刺眼","晃眼","灯太亮"],
+a:`刺眼（眩光）有三种来源，对症下药：<br>
+<ul>
+<li><strong>直射眩光</strong>——看到光源本身：加遮光罩、深藏光源；</li>
+<li><strong>反射眩光</strong>——桌面/屏幕反光：改灯具位置与角度；</li>
+<li><strong>亮度对比过大</strong>——只亮桌面不亮环境：加背景光。</li>
+</ul>
+指标：读写桌面照度 <strong>≥ 300 lx</strong>，照度均匀度 ≥ 0.7，色温 4000 K 左右。`,
+q:["人机关系要注意什么","设计评价量规"]},
+
+{id:"n43",t:"做一个自动浇花装置怎么设计",k:["自动浇花","浇水","智能花盆","土壤湿度"],s:["浇花","养花","忘了浇水"],
+a:`按设计的一般过程走一遍：<br>
+<ol>
+<li><strong>明确问题</strong>——为经常出差的人，解决绿植缺水，要求水箱续航 ≥ 7 天、不烂根；</li>
+<li><strong>方案比较</strong>——<em>定时开环</em>（便宜，但天气变了就浇多或浇少）vs <em>土壤湿度闭环</em>（贵一点，但自适应）；</li>
+<li><strong>结构</strong>——水箱、水泵、湿度探头、控制器；探头插在根系附近 5 cm 深；</li>
+<li><strong>试验</strong>——固定土质与花盆，只改阈值，测\"土壤含水率—浇水次数\"关系；</li>
+<li><strong>优化</strong>——加死区防止频繁启停，加低水位报警。</li>
+</ol>
+<em>这道题几乎是通用技术设计题的标配，五步写全就能拿高分。</em>`,
+q:["开环和闭环的区别","阈值和死区怎么设","技术试验怎么设计"]},
+
+{id:"n44",t:"设计说明怎么写",k:["设计说明","说明书","报告","文档"],s:["写报告","写说明书"],
+a:`六段式，照抄结构即可：<br>
+<ol>
+<li><strong>问题与目标</strong>——为谁解决什么，量化指标；</li>
+<li><strong>调研与约束</strong>——已有方案、可用资源、限制条件；</li>
+<li><strong>方案与取舍</strong>——至少两个方案，说清为什么选这个；</li>
+<li><strong>结构与图样</strong>——三视图、轴测图、关键尺寸；</li>
+<li><strong>试验与数据</strong>——测什么、怎么测、结果如何；</li>
+<li><strong>改进与展望</strong>——还有什么不足、下一步怎么做。</li>
+</ol>
+<em>最加分的是第 3 段的取舍理由和第 6 段的坦诚。</em>`,
+q:["方案答辩怎么讲","设计日志怎么写"]},
+
+{id:"n45",t:"通用技术课上怎么提一个好问题",k:["提问题","选题","问题意识"],s:["不知道做什么","没题目"],
+a:`好问题的三个特征：<strong>真实、具体、可解</strong>。<br>
+<ul>
+<li><strong>真实</strong>——来自你自己的生活或身边人，不是编的；</li>
+<li><strong>具体</strong>——有明确的使用者、场景、时刻；</li>
+<li><strong>可解</strong>——用现有材料、工时、经费做得出来。</li>
+</ul>
+<em>检验方法</em>：把你选的问题说给一个外行听，如果他反问"那又怎样"，说明痛点还不够痛。`,
+q:["设计任务陈述怎么写","怎么发现问题"]}
+);
+
+
+/* 教学法扩展包：《通用技术概论》是师范生课程，学伴需同时服务"学会"与"会教"。
+   由 build.py 拼接在 kb2.js 之后。 */
+
+const SYN_TEACH = [
+  { to: ["教学设计", "课堂活动"], from: ["怎么讲", "怎么教", "上课", "试教", "讲给学生"] },
+  { to: ["学生常见错误", "易错点"], from: ["学生老错", "学生不会", "老出错", "易错"] },
+  { to: ["评价", "量规"], from: ["怎么打分", "怎么评", "考学生"] }
+];
+SYN.push.apply(SYN, SYN_TEACH);
+
+KB.push(
+
+{id:"t1",t:"三视图怎么教：学生最容易错在哪",k:["三视图教学","怎么教三视图","三视图怎么教","教三视图","学生常见错误","易错点"],s:["讲三视图","教三视图","学生老是画错","俯视图画反","虚实不分","讲学生"],
+a:`师范生上讲台前必须知道，学生的错误高度集中在这五类：<br>
+<ol>
+<li><strong>虚实不分</strong>——把看不见的轮廓画成实线。要强调"虚线是可预判的：从另外两个视图推得出来"。</li>
+<li><strong>漏画中心线</strong>——回转体的对称中心线是<em>点划线</em>，不是细实线。</li>
+<li><strong>长对正对错方向</strong>——主视图的<strong>左右</strong>对应俯视图的<strong>左右</strong>，不是上下。</li>
+<li><strong>把俯视图上下颠倒</strong>——俯视图的<em>上边是物体的后方</em>，这是最高频的失分点。</li>
+<li><strong>三视图当三张画</strong>——三张图互不对应，各画各的。</li>
+</ol>
+<strong>教学建议</strong>：不要一上来讲规则。先给一个实物（如三个小正方体搭的 L 形），让学生自己搭、自己画，画完用"长对正"去互相检查，错误会自己浮出来。规则在学生碰壁之后再讲，才记得住。`,
+q:["设计课怎么组织","怎么评价学生的作品"]},
+
+{id:"t2",t:"通用技术课怎么组织：一节课的骨架",k:["教学设计","课堂组织","课时安排","怎么上课","设计课"],s:["怎么安排一节课","课堂怎么组织","设计课怎么组织","课怎么上","课堂流程"],
+a:`通用技术课最忌"讲满 45 分钟"。推荐四段式：<br>
+<ul>
+<li><strong>情境导入（5 分钟）</strong>——抛一个真实麻烦（书包压肩、水杯烫手），不给答案；</li>
+<li><strong>任务驱动（10 分钟）</strong>——明确任务与约束（尺寸、成本、时间），发材料；</li>
+<li><strong>动手实践（20 分钟）</strong>——学生做，教师只巡不替；</li>
+<li><strong>交流评价（10 分钟）</strong>——每组 1 分钟讲"我们改了什么、为什么"。</li>
+</ul>
+<em>关键</em>：教师讲话总时长控制在 15 分钟以内。技术课的育人价值在"做"里，不在"听"里。`,
+q:["设计课的材料怎么准备","怎么评价学生的作品"]},
+
+{id:"t3",t:"怎么评价学生的设计作品",k:["学生评价","作品评价","量规","过程性评价"],s:["怎么给学生打分","评价学生"],
+a:`不要只评"好不好看"。四个证据缺一不可：<br>
+<ol>
+<li><strong>设计日志</strong>——证明方案是迭代出来的；</li>
+<li><strong>方案草图</strong>——看有没有两个以上原理不同的思路；</li>
+<li><strong>试验数据</strong>——看有没有控制变量、有没有重复；</li>
+<li><strong>答辩表现</strong>——看能不能说清"为什么这样取舍"。</li>
+</ol>
+<strong>常见误区</strong>：把"做工精细"当成主要指标。一个粗糙但论证扎实的作品，比一个漂亮但说不出理由的作品得分应更高——后者往往不是学生做的。`,
+q:["设计课怎么组织","师范生怎么补动手能力"]},
+
+{id:"t4",t:"师范生怎么补动手能力",k:["动手能力","师范生","实践","金工木工"],s:["不会动手","没做过东西"],
+a:`三条现实路径：<br>
+<strong>一是"小件反复做"</strong>——不要一上来做复杂作品。用一节课做一个能用的手机支架，把锯、锉、钻、粘四道工序走通。<br>
+<strong>二是"拆解代替制作"</strong>——找废旧小家电拆开，画结构图、分析连接方式与材料，成本极低但收获很大。<br>
+<strong>三是"跟着学伴走一遍设计流程"</strong>——你将在课堂上带学生走五步，自己先完整走一遍，才知道每一步学生会卡在哪里。`,
+q:["设计课怎么组织","三视图怎么教"]},
+
+{id:"t5",t:"试教与说课怎么准备",k:["试教","说课","微格教学","教案"],s:["上台讲","说课稿","试讲"],
+a:`说课四问，答完就成型：<br>
+<ul>
+<li><strong>教什么</strong>——本课的核心概念与技能，一句话说清；</li>
+<li><strong>教给谁</strong>——学生的前概念是什么、会在哪里卡住；</li>
+<li><strong>怎么教</strong>——任务如何设计、材料如何准备、时间如何分配；</li>
+<li><strong>怎么知道教会了</strong>——用什么证据判断目标达成。</li>
+</ul>
+<em>试教最容易被扣分的是"教师讲太多"</em>：评委看的是学生活动时间占比，不是教师的口才。`,
+q:["设计课怎么组织","怎么评价学生的作品"]},
+
+{id:"t6",t:"通用技术教室与器材怎么准备",k:["器材","实验室","工具","材料准备","安全"],s:["没有工具","材料从哪来"],
+a:`低成本清单（一个班 40 人，人均 15 元内可覆盖）：<br>
+<ul>
+<li><strong>切割</strong>——美工刀、手锯、曲线锯；</li>
+<li><strong>修整</strong>——锉刀、砂纸（80/240 目）；</li>
+<li><strong>连接</strong>——热熔胶枪、白乳胶、自攻螺丝、角码；</li>
+<li><strong>材料</strong>——椴木层板 3mm/5mm、瓦楞纸板、PVC 管、冰棍棒；</li>
+<li><strong>测量</strong>——钢直尺、三角板、游标卡尺（每 4 人一把）。</li>
+</ul>
+<strong>安全三件事</strong>：刀具发放与回收点数、护目镜、急救包。小学段用纸板与冰棍棒替代锯切。`,
+q:["设计课怎么组织","怎么评价学生的作品"]}
+
+);
+</script>
+<script>/* 「格物」智能学伴 · 交互逻辑
+   纯前端、零依赖、离线可用。数据见 data.js（构建时内联）。 */
+
+/* ---------------- 基础工具 ---------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+const KEY = "gewu.v1";
+const DEFAULT_STATE = {
+  qa: 0, topics: [], design: { stage: 0, answers: ["", "", "", "", ""], checks: [] },
+  quiz: { right: 0, total: 0, streak: 0 }, exp: 0, name: ""
+};
+let S = load();
+function load() {
+  try { const r = JSON.parse(localStorage.getItem(KEY)); return r && typeof r === "object" ? Object.assign(structuredClone(DEFAULT_STATE), r) : structuredClone(DEFAULT_STATE); }
+  catch (e) { return structuredClone(DEFAULT_STATE); }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+
+let toastT;
+function toast(m) {
+  let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; document.body.appendChild(t); }
+  t.textContent = m; t.classList.add("on"); clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove("on"), 1800);
+}
+
+/* ---------------- 标签切换 ---------------- */
+function show(id, silent) {
+  if (!document.getElementById("v-" + id)) return;
+  $$(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + id));
+  $$(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.go === id ? "true" : "false"));
+  if (!silent) history.replaceState(null, "", "#" + id);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (id === "profile") renderProfile();
+}
+window.addEventListener("hashchange", () => {
+  const h = location.hash.slice(1);
+  if (h) show(h, true);
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-go]"); if (!t) return;
+  show(t.dataset.go);
+});
+
+/* 实测吸顶栏高度并写入 CSS 变量：副标题换行、字体缩放时标签栏不会错位 */
+function syncBars() {
+  const tb = $(".topbar"), tabs = $(".tabs");
+  if (!tb || !tabs) return;
+  const h = tb.getBoundingClientRect().height;
+  const t = tabs.getBoundingClientRect().height;
+  const root = document.documentElement.style;
+  root.setProperty("--topbarH", h + "px");
+  root.setProperty("--bars", (h + t) + "px");
+}
+window.addEventListener("resize", syncBars);
+window.addEventListener("orientationchange", () => setTimeout(syncBars, 120));
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncBars);
+
+/* ---------------- 大模型配置 ----------------
+   默认走硅基流动（实测允许浏览器直连）。Key 留空 = 纯本地模式，页面照常工作。 */
+const AI_CFG_KEY = "gewu.ai";
+const AI_DEFAULT = {
+  enabled: true,
+  baseUrl: "https://api.siliconflow.cn/v1/chat/completions",
+  model: "deepseek-ai/DeepSeek-V4-Flash",
+  apiKey: "sk-omncqhofdsvhvamznzdpcmvbxrvkygofbnpuicdwvvaohjbi"
+};
+let CFG = (() => {
+  try { return Object.assign({}, AI_DEFAULT, JSON.parse(localStorage.getItem(AI_CFG_KEY) || "{}")); }
+  catch (e) { return Object.assign({}, AI_DEFAULT); }
+})();
+const aiReady = () => !!(CFG.enabled && CFG.apiKey);
+const chatHistory = [];
+
+const SYSTEM_PROMPT = `你是「格物」，《通用技术概论》课程的智能学伴。服务对象是修读本课的师范生——他们既要自己会设计，将来还要能把这套东西教给中学生。
+
+回答规则：
+1. 用中文，像一位带教的师兄：先给结论，再给理由，最后给一个立刻能做的动作。
+2. 只讲本课程范围：技术及其性质、设计的一般过程、图样表达（三视图/尺寸标注）、结构与设计、流程与设计、系统与设计、控制与设计、评价与人机关系、技术伦理，以及这些内容的**教法**。超出范围就说明，并把话题引回课程。
+3. 学生描述"我的书架晃""水杯烫手""椅子坐着累"这类情境时，先判断它属于哪一类问题（稳定性 / 强度 / 人机 / 流程 / 控制），再给可操作的改法，不要一上来背定义。
+4. 当问题涉及"怎么教""学生老错在哪""课堂怎么组织"时，要给出可直接用的教学建议：学生常见错误、活动设计、材料清单、评价要点。
+5. 不要编造数据、标准号、人名、文献。不确定就直说"这一点我不确定"。
+6. 控制在 300 字以内，短句、分点，适合手机阅读。可以用 **加粗** 和 1. 2. 3. 的列表。
+7. 不替学生下最终结论：给方案，也提醒他自己权衡取舍。
+8. 如果问题适合用工具解决（看图练习、试验设计、方案自检），在结尾用一句话建议他去对应模块。`;
+
+/* ---------------- 对话引擎 ---------------- */
+const log = $("#log");
+
+function bubble(role, html) {
+  const d = document.createElement("div");
+  d.className = "msg " + (role === "me" ? "me" : "bot");
+  d.innerHTML = `<div class="av">${role === "me" ? "我" : "格"}</div><div class="bub">${html}</div>`;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+  return d.querySelector(".bub");
+}
+
+function renderStarter() {
+  const wrap = document.createElement("div");
+  wrap.className = "starter";
+  [
+    ["01", "我有个设计想法", "走完五步，出任务单", "我要设计一个东西"],
+    ["02", "三视图老是画错", "无限出题，讲错因", "去图样训练"],
+    ["03", "这节课怎么教", "学生错在哪", "三视图怎么教"],
+    ["04", "帮我算试验数据", "定变量、出结论", "去技术试验"]
+  ].forEach(function (it) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = "<i>" + it[0] + "</i><div><b>" + esc(it[1]) + "</b><span>" + esc(it[2]) + "</span></div>";
+    b.onclick = function () { ask(it[3]); };
+    wrap.appendChild(b);
+  });
+  log.appendChild(wrap);
+  log.scrollTop = 0;
+}
+
+function setChips(list) {
+  const box = $("#chips"); box.innerHTML = "";
+  (list || []).filter(Boolean).slice(0, 4).forEach(c => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.textContent = c;
+    b.onclick = () => ask(c);
+    box.appendChild(b);
+  });
+}
+
+const INTENTS = [
+  { re: /^(你好|您好|hi|hello|在吗|在不在)/i, kind: "greet" },
+  { re: /(你能做什么|怎么用|帮助|使用说明|能干什么)/, kind: "help" },
+  { re: /(开始设计|我要设计|我想设计|设计一个|想做个|做个东西|设计任务)/, kind: "design" },
+  { re: /(练习|做题|闯关|出题|来几道|考考我|想练|训练一下)/, kind: "quiz" },
+  { re: /(做试验|试验怎么做|试验方案|变量控制|设计个试验)/, kind: "exp" },
+  { re: /(我的画像|素养画像|学习报告|雷达图|学情)/, kind: "profile" }
+];
+
+function bigrams(s) {
+  const out = []; for (let i = 0; i < s.length - 1; i++) out.push(s.slice(i, i + 2)); return out;
+}
+
+const cleanText = t => t.replace(/[\s，。？！、；：""''（）()【】\[\]?.,!;:]/g, "");
+
+/* 停用字：防止"的关""么是"这类虚词双字把无关问题拉过阈值 */
+const STOP_CHARS = "的了是在有和与吗呢吧啊么怎什为就都也很还我你他它们这那个";
+
+/* 打分拆成两路：term = 术语/口语同义词命中，bg = 标题双字重合。
+   只有 term 达标才算"真的问到了"，bg 仅用于排序微调。 */
+function scoreOf(e, text) {
+  if (!text) return { term: 0, bg: 0 };
+  let term = 0, bg = 0;
+  (e.k || []).forEach(k => { if (text.includes(k)) term += Math.min(k.length * 3, 12); });
+  (e.s || []).forEach(k => { if (text.includes(k)) term += Math.min(k.length * 4, 14); });
+  const set = new Set(bigrams(text));
+  bigrams(e.t).forEach(b => {
+    if (set.has(b) && !STOP_CHARS.includes(b[0]) && !STOP_CHARS.includes(b[1])) bg += 1.5;
+  });
+  return { term: term, bg: bg };
+}
+
+/* 口语扩词：把"晃 / 烫手 / 结实"映射成课程术语，权重打折 */
+function expandQuery(q) {
+  const extra = [];
+  SYN.forEach(g => { if (g.from.some(w => q.includes(w))) extra.push.apply(extra, g.to); });
+  return extra.join(" ");
+}
+
+function search(text) {
+  const q = cleanText(text);
+  if (q.length < 2) return null;
+  const extra = expandQuery(q);
+  return KB.map(e => {
+    const a = scoreOf(e, q), b = scoreOf(e, extra);
+    const term = a.term + b.term * 0.45;
+    const bg = a.bg + b.bg * 0.45;
+    return { e: e, term: +term.toFixed(1), sc: +(term + bg * 0.6).toFixed(1) };
+  }).sort((x, y) => y.sc - x.sc);
+}
+
+/* ---------- 本地应答的三个出口：答、反问澄清、老实说不会 ---------- */
+function answerEntry(top, ranked) {
+  S.qa++; if (!S.topics.includes(top.e.id)) S.topics.push(top.e.id); save();
+  const rel = ranked.slice(1, 3).filter(r => r.sc >= Math.max(2, top.sc * 0.3)).map(r => r.e);
+  let html = `<p style="margin-bottom:6px"><strong>${esc(top.e.t)}</strong></p>` + top.e.a;
+  if (rel.length) html += `<div class="src">相关：${rel.map(r => esc(r.t)).join(" · ")}</div>`;
+  bubble("bot", html);
+  setChips([...(top.e.q || []), ...rel.map(r => r.t)]);
+}
+
+function clarify(pair) {
+  const a = pair[0], b = pair[1];
+  bubble("bot", `<p>你说的可能对应两个不同的问题，我怕答偏了——你更想问的是：</p>
+    <ul><li><strong>${esc(a.e.t)}</strong></li><li><strong>${esc(b.e.t)}</strong></li></ul>
+    <p class="muted">点下面选一个，或者把话说得更具体些，我再答。</p>`);
+  setChips([a.e.t, b.e.t, ...(a.e.q || []).slice(0, 2)]);
+}
+
+function fallback(ranked) {
+  const near = (ranked || []).slice(0, 3).map(r => r.e.t);
+  bubble("bot", `<p>这个问题我没有把握，不想给你编一个答案。</p>
+    <p>我覆盖的范围是：<strong>设计的一般过程、图样表达、结构与设计、流程与设计、系统与设计、控制与设计、评价与人机关系</strong>。</p>
+    ${near.length ? `<p class="muted">这些或许沾边：${near.map(esc).join(" · ")}</p>` : ""}`);
+  setChips((near || []).concat(["设计的一般过程是什么", "三视图怎么画", "怎么提高结构稳定性"]));
+}
+
+/* "帮我看看我的东西"——这不是知识点问题，是诊断问题 */
+function routeDiag() {
+  bubble("bot", `<p>这种"帮我看看"的问题，光靠聊天我判断不准——我需要知道你做了什么、给谁用、卡在哪。</p>
+    <p>最快的办法是走一遍<strong>设计工坊</strong>的五步，我按结构稳定性、强度与连接、材料与工艺、尺寸与图样、成本与资源、安全与人机六个维度给你查一遍，最后出一张任务单。</p>
+    <p class="muted">只想先聊两句也行，比如直接说"我这个书架有点晃"。</p>`);
+  setChips(["进设计工坊", "我这个书架有点晃", "怎么提高结构稳定性"]);
+}
+
+function localAnswer(text) {
+  const q = cleanText(text);
+  if (/(帮我(看看|诊断|改|分析)|我的方案|我做的.{0,8}行不行|有什么问题|怎么改进我)/.test(q)) return routeDiag();
+
+  const ranked = search(q);
+  const top = ranked && ranked[0];
+  if (!top || top.term < 3) return fallback(ranked);
+
+  const second = ranked[1];
+  if (second && top.sc < 12 && second.sc >= top.sc * 0.65) return clarify([top, second]);
+
+  return answerEntry(top, ranked);
+}
+
+/* ---------- 大模型：流式输出 ---------- */
+function stripTags(h) {
+  return h.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|li|ul|ol)>/gi, "\n")
+          .replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* 极简 markdown：加粗、行内代码、有序/无序列表、段落 */
+function md(src) {
+  const inline = s => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+  return String(src).split(/\n{2,}/).map(b => {
+    const lines = b.split("\n").filter(l => l.trim());
+    if (!lines.length) return "";
+    if (lines.every(l => /^\s*([-*•]|\d+[.、])\s+/.test(l))) {
+      const ordered = /^\s*\d+[.、]\s+/.test(lines[0]);
+      const items = lines.map(l => `<li>${inline(l.replace(/^\s*([-*•]|\d+[.、])\s+/, ""))}</li>`).join("");
+      return ordered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+    }
+    return `<p>${lines.map(inline).join("<br>")}</p>`;
+  }).join("");
+}
+
+async function streamAI(text, bub) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 35000);
+  const ctx = (search(text) || []).slice(0, 2).filter(r => r.sc > 0)
+    .map(r => `【${r.e.t}】${stripTags(r.e.a)}`).join("\n\n");
+
+  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
+  if (ctx) messages.push({ role: "system", content: "以下是本课程知识库中的相关资料，回答时优先采用，不要与它矛盾：\n\n" + ctx });
+  chatHistory.slice(-8).forEach(m => messages.push(m));
+  messages.push({ role: "user", content: text });
+
+  let full = "";
+  try {
+    const res = await fetch(CFG.baseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + CFG.apiKey },
+      body: JSON.stringify({ model: CFG.model, messages, stream: true, temperature: 0.6, max_tokens: 800 }),
+      signal: ctrl.signal
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.body) throw new Error("no stream");
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder("utf-8");
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      for (const line of lines) {
+        const s = line.trim();
+        if (s.indexOf("data:") !== 0) continue;
+        const d = s.slice(5).trim();
+        if (!d || d === "[DONE]") continue;
+        try {
+          const j = JSON.parse(d);
+          const c = (j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content) || "";
+          if (c) { full += c; bub.innerHTML = md(full); log.scrollTop = log.scrollHeight; }
+        } catch (e) { /* 心跳行 */ }
+      }
+    }
+    if (!full.trim()) throw new Error("empty");
+    chatHistory.push({ role: "user", content: text }, { role: "assistant", content: full });
+    bub.innerHTML = md(full);
+    return true;
+  } catch (e) {
+    if (full.trim()) { bub.innerHTML = md(full); return true; }
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function reply(text) {
+  const t = text.trim(); if (!t) return;
+  const st = log.querySelector(".starter"); if (st) st.remove();
+  bubble("me", esc(t));
+
+  if (aiReady()) {
+    const bub = bubble("bot", `<span class="muted">思考中…</span>`);
+    const ok = await streamAI(t, bub);
+    if (ok) {
+      const ranked = search(t) || [];
+      setChips(ranked.slice(1, 3).map(r => r.e.t).concat(["进设计工坊", "去图样训练"]));
+      return;
+    }
+    bubble("bot", `<div class="src" style="margin:0 0 6px">大模型暂时连不上，已切换到本地知识库。</div>`);
+  }
+
+  const it = INTENTS.find(i => i.re.test(t));
+  if (it) return handleIntent(it.kind, t);
+  localAnswer(t);
+}
+
+function handleIntent(kind, t) {
+  const M = {
+    greet: () => {
+      bubble("bot", `<p>你好，我是<strong>格物</strong>——通用技术的设计与制作学伴。</p>
+        <p>我不替你画图、也不替你下结论，我陪你把这五步走扎实：<br>
+        <strong>发现问题 → 明确要求 → 构思比较 → 制作试验 → 优化评价</strong>。</p>
+        <p class="muted">你可以直接问我知识点，也可以说"我要设计一个……"开始做项目。</p>`);
+      setChips(["设计的一般过程是什么", "我要设计一个东西", "三视图怎么画", "五大核心素养是什么"]);
+    },
+    help: () => {
+      bubble("bot", `<p>我有五个入口：</p><ul>
+        <li><strong>对话</strong>——问知识点，我会按课程标准答；</li>
+        <li><strong>设计工坊</strong>——五阶段带你走完一个真实设计，最后生成任务单；</li>
+        <li><strong>图样训练</strong>——三视图闯关，做错立刻讲错因；</li>
+        <li><strong>技术试验</strong>——帮你把"变量"和"记录表"定下来；</li>
+        <li><strong>我的画像</strong>——看五大核心素养走到哪了。</li>
+      </ul><p class="muted">现在想从哪开始？</p>`);
+      setChips(["我要设计一个东西", "三视图怎么画", "技术试验怎么设计", "我的素养画像"]);
+    },
+    design: () => {
+      bubble("bot", `<p>好，那我们走一遍<strong>设计的一般过程</strong>。先别急着画图——</p>
+        <p>这一步最容易做错：直接想"做个什么"。正确的顺序是先想"<strong>谁在什么情境下遇到什么麻烦</strong>"。</p>
+        <p>点下面按钮进设计工坊，一步一步来，我会在每个阶段追问你。</p>`);
+      setChips(["进设计工坊", "先讲讲怎么发现问题"]);
+    },
+    quiz: () => {
+      bubble("bot", `<p>三视图考的是<strong>长对正、高平齐、宽相等</strong>。规则背了不等于会做，来练几道。</p>
+        <p>我会给你俯视图上的数字（表示该位置叠了几个小正方体），让你判断主视图。做错我讲错在哪。</p>`);
+      setChips(["去图样训练", "先复习投影规律"]);
+    },
+    exp: () => {
+      bubble("bot", `<p>技术试验的关键不是"做一遍看看"，而是<strong>只改一个变量</strong>、有对照、有重复。</p>
+        <p>告诉我你测什么，我帮你把自变量、因变量、控制变量固定下来，再生成记录表。</p>`);
+      setChips(["去技术试验", "变量怎么控制"]);
+    },
+    profile: () => { bubble("bot", `<p>我把你在五个模块里的行为留痕汇总成了五大核心素养的雷达图。</p>`); show("profile"); setChips(["回到对话"]); }
+  };
+  (M[kind] || M.help)();
+}
+
+function ask(text) {
+  if (text === "进设计工坊") { show("design"); return; }
+  if (text === "去图样训练") { show("quiz"); return; }
+  if (text === "去技术试验") { show("exp"); return; }
+  if (text === "回到对话") { show("chat"); return; }
+  if (text === "我的素养画像" || text === "我的画像") { show("profile"); return; }
+  reply(text);
+  const inp = $("#in"); if (inp) inp.value = "";
+}
+
+
+$("#send").onclick = () => ask($("#in").value);
+function growInput() {
+  const ta = $("#in"); if (!ta) return;
+  ta.style.height = "44px";
+  if (!ta.value) return;
+  ta.style.height = Math.min(ta.scrollHeight, 132) + "px";
+}
+$("#in").addEventListener("input", growInput);
+growInput();
+
+$("#in").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(e.target.value); }
+});
+
+/* ---------------- 设计工坊 ---------------- */
+let stage = S.design.stage || 0;
+
+function renderStage() {
+  stage = clamp(stage, 0, 4);
+  const st = STAGES[stage];
+  $("#prog").innerHTML = STAGES.map((_, i) =>
+    `<b class="${i < stage ? "done" : (i === stage ? "now" : "")}"></b>`).join("");
+  $("#stageT").textContent = `第 ${stage + 1} 步 · ${st.t}`;
+  $("#stageQ").innerHTML = st.q;
+  $("#checks").innerHTML = st.c.map((c, i) => {
+    const on = (S.design.checks || []).includes(stage + ":" + i);
+    return `<li data-i="${i}" class="${on ? "on" : ""}"><span class="box">✓</span>${esc(c)}</li>`;
+  }).join("");
+  $("#ta").value = S.design.answers[stage] || "";
+  $("#prev").disabled = stage === 0;
+  $("#next").textContent = stage === 4 ? "生成设计任务单" : "下一步 →";
+}
+$("#checks").addEventListener("click", e => {
+  const li = e.target.closest("li"); if (!li) return;
+  const key = stage + ":" + li.dataset.i;
+  S.design.checks = S.design.checks || [];
+  const i = S.design.checks.indexOf(key);
+  if (i >= 0) S.design.checks.splice(i, 1); else S.design.checks.push(key);
+  li.classList.toggle("on"); save();
+});
+$("#ta").addEventListener("input", e => { S.design.answers[stage] = e.target.value; save(); });
+$("#prev").onclick = () => { stage--; renderStage(); };
+$("#next").onclick = () => {
+  if (!($("#ta").value || "").trim()) { toast("这一阶段还没写，先写两句"); return; }
+  if (stage < 4) { stage++; S.design.stage = stage; save(); renderStage(); }
+  else { renderSheet(); }
+};
+$("#resetDesign").onclick = () => {
+  if (!confirm("清空设计工坊的全部记录？")) return;
+  S.design = { stage: 0, answers: ["", "", "", "", ""], checks: [] }; save(); stage = 0; renderStage(); $("#sheet").innerHTML = "";
+};
+
+function renderSheet() {
+  const all = S.design.answers.map((a, i) => a.trim()).filter(Boolean).join("。");
+  if (!all) { toast("先完成几个阶段再来"); return; }
+  const rows = DIMS.map(d => {
+    const hits = d.k.filter(k => all.includes(k)).length;
+    return { n: d.n, v: clamp(hits * 34, 0, 100), tip: d.tip };
+  });
+  const avg = Math.round(rows.reduce((a, r) => a + r.v, 0) / rows.length);
+
+  $("#sheet").innerHTML = `
+    <div class="card pad" style="margin-top:18px">
+      <div class="sect-h"><span class="num">图 08</span><h2>设计任务单与自检</h2></div>
+      <p class="hint">下面是依据你五阶段填写内容生成的诊断，供你修改方案时对照，不是评分。</p>
+      ${rows.map(r => `
+        <div class="dim">
+          <div class="dim-h"><span>${r.n}</span><em>${r.v}</em></div>
+          <div class="bar"><i class="${r.v >= 70 ? "hi" : r.v >= 35 ? "mid" : "lo"}" style="width:${r.v}%"></i></div>
+        </div>`).join("")}
+      <div class="tip ${avg >= 60 ? "ok" : ""}">
+        <span>${avg >= 60 ? "✓" : "!"}</span>
+        <div><b>${avg >= 60 ? "整体较完整" : "还有明显缺口"}</b>（综合 ${avg}/100）。
+        ${rows.filter(r => r.v < 60).slice(0, 3).map(r => `<br>· ${r.n}：${r.tip}`).join("") || "<br>· 六项都已覆盖，建议进一步检查数据是否可量化。"}</div>
+      </div>
+      <div class="row">
+        <button class="btn accent sm" id="copySheet">复制任务单</button>
+        <button class="btn ghost sm" id="dlSheet">下载 .txt</button>
+      </div>
+    </div>`;
+
+  const txt = buildSheetText();
+  $("#copySheet").onclick = async () => {
+    try { await navigator.clipboard.writeText(txt); toast("已复制"); }
+    catch (e) { toast("复制失败，请手动下载"); }
+  };
+  $("#dlSheet").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([txt], { type: "text/plain;charset=utf-8" }));
+    a.download = "格物_设计任务单.txt"; a.click(); URL.revokeObjectURL(a.href);
+  };
+}
+
+function buildSheetText() {
+  let s = "《格物》智能学伴 · 设计任务单\n" + "=".repeat(34) + "\n\n";
+  STAGES.forEach((st, i) => {
+    s += `【${i + 1}. ${st.t}】\n${(S.design.answers[i] || "（未填写）").trim()}\n\n`;
+  });
+  const all = S.design.answers.join("。");
+  s += "【自检维度】\n";
+  DIMS.forEach(d => {
+    const hits = d.k.filter(k => all.includes(k)).length;
+    s += `· ${d.n}：${hits ? "已涉及" : "未涉及"}${hits ? "" : " — " + d.tip}\n`;
+  });
+  return s + "\n由「格物」智能学伴生成 · 通用技术\n";
+}
+
+/* ---------------- 图样训练 ---------------- */
+const U = 20, CW = 32;
+
+function planSVG(h) {
+  const rows = h.length, cols = h[0].length;
+  let s = `<svg width="${cols * CW + 12}" height="${rows * CW + 12}" viewBox="0 0 ${cols * CW + 12} ${rows * CW + 12}">`;
+  s += `<rect x="6" y="6" width="${cols * CW}" height="${rows * CW}" fill="#fff" stroke="#43536b" stroke-width="1.4"/>`;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const x = 6 + c * CW, y = 6 + r * CW;
+    if (r) s += `<line x1="${x}" y1="${y}" x2="${x + CW}" y2="${y}" stroke="#c6d2e0"/>`;
+    if (c) s += `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + CW}" stroke="#c6d2e0"/>`;
+    s += `<text x="${x + CW / 2}" y="${y + CW / 2 + 5}" font-size="15" font-family="monospace" fill="${h[r][c] ? "#18212e" : "#c6d2e0"}" text-anchor="middle">${h[r][c] || 0}</text>`;
+  }
+  return s + "</svg>";
+}
+
+function elevSVG(hs) {
+  const w = hs.length * U + 10, ht = 3 * U + 12;
+  let s = `<svg width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}">`;
+  s += `<line x1="4" y1="${ht - 6}" x2="${w - 4}" y2="${ht - 6}" stroke="#43536b" stroke-width="1.4"/>`;
+  hs.forEach((v, i) => {
+    if (!v) return;
+    const x = 5 + i * U, hh = v * U;
+    s += `<rect x="${x + 1}" y="${ht - 6 - hh}" width="${U - 2}" height="${hh}" fill="#fff" stroke="#43536b" stroke-width="1.3"/>`;
+  });
+  return s + "</svg>";
+}
+
+function rndInt(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+
+function genQ() {
+  const rows = rndInt(2, 3), cols = rndInt(2, 3);
+  const h = [];
+  for (let r = 0; r < rows; r++) { const row = []; for (let c = 0; c < cols; c++) row.push(rndInt(0, 3)); h.push(row); }
+  if (h.flat().every(v => v === 0)) h[0][0] = rndInt(1, 3);
+
+  if (Math.random() < 0.28) {
+    const n = h.flat().reduce((a, b) => a + b, 0);
+    const opts = new Set([n]); let g = 0;
+    while (opts.size < 4 && g++ < 40) { const d = rndInt(-3, 3); if (d && n + d > 0) opts.add(n + d); }
+    return { kind: "count", h, ans: n, opts: shuffle([...opts]).slice(0, 4) };
+  }
+  const front = []; for (let c = 0; c < cols; c++) { let m = 0; for (let r = 0; r < rows; r++) m = Math.max(m, h[r][c]); front.push(m); }
+  const pool = [front];
+  const push = a => { if (a.length === front.length && !pool.some(p => p.join() === a.join())) pool.push(a); };
+  push([...front].reverse());
+  push(front.map(v => clamp(v + (Math.random() < .5 ? 1 : -1), 0, 3)));
+  push(shuffle([...front]));
+  let guard = 0;
+  while (pool.length < 4 && guard++ < 60) push(front.map(() => rndInt(0, 3)));
+  return { kind: "front", h, front, opts: prune(pool, front) };
+}
+
+function prune(list, ans) {
+  const out = [ans];
+  for (const a of list) { if (out.length >= 4) break; if (!out.some(o => o.join() === a.join())) out.push(a); }
+  return shuffle(out);
+}
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+let q = null, locked = false;
+function newQ() {
+  q = genQ(); locked = false;
+  const cap = `<p class="hint" style="margin:6px 0 0">俯视图方位：上为后、下为前，左为左、右为右</p>`;
+  $("#qBody").innerHTML = q.kind === "count"
+    ? `<p class="stage-q">俯视图上每个数字表示该位置<strong>叠加的小正方体个数</strong>。这个几何体一共用了<strong>多少个小正方体</strong>？</p>${planSVG(q.h)}${cap}`
+    : `<p class="stage-q">俯视图上每个数字表示该位置<strong>叠加的小正方体个数</strong>。从正面看，这个几何体的<strong>主视图</strong>是下面哪一个？</p>${planSVG(q.h)}${cap}`;
+
+  $("#opts").innerHTML = q.opts.map((o, i) => {
+    const letter = "ABCD"[i];
+    const body = q.kind === "count"
+      ? `<div style="font-family:monospace;font-size:26px;padding:10px 0;color:#18212e">${o}</div>`
+      : elevSVG(o);
+    return `<button class="opt" data-v="${q.kind === "count" ? o : o.join(",")}"><span class="lb">${letter}</span>${body}</button>`;
+  }).join("");
+
+  $("#fb").innerHTML = "";
+  $("#stat").innerHTML = `已做 <b>${S.quiz.total}</b> · 正确 <b>${S.quiz.right}</b> · 正确率 <b>${S.quiz.total ? Math.round(S.quiz.right / S.quiz.total * 100) : 0}%</b>`;
+}
+
+$("#opts").addEventListener("click", e => {
+  const btn = e.target.closest(".opt"); if (!btn || locked) return;
+  locked = true;
+  const val = btn.dataset.v;
+  const right = q.kind === "count" ? String(q.ans) : q.front.join(",");
+  const ok = val === right;
+  S.quiz.total++; if (ok) { S.quiz.right++; S.quiz.streak++; } else S.quiz.streak = 0;
+  save();
+
+  $$(".opt").forEach(o => {
+    if (o.dataset.v === right) o.classList.add("right");
+    else if (o === btn) o.classList.add("wrong");
+  });
+
+  $("#fb").innerHTML = ok
+    ? `<div class="tip ok"><span>✓</span><div><b>对了。</b>${q.kind === "front" ? "主视图的每一列高度，等于俯视图中<em>这一列所有数字的最大值</em>——记住这条，比背口诀管用。" : "小正方体总数就是把俯视图上所有数字相加。"}</div></div>`
+    : `<div class="tip"><span>!</span><div><b>不对。</b>${q.kind === "front"
+      ? `主视图看的是<strong>前后方向的最大高度</strong>：从左到右每一列取该列数字的<em>最大值</em>，得到 ${q.front.join(" 、 ")}。你选的 ${val.split(",").join(" 、 ")} 里，有的取了最小值，有的把左右顺序看反了。`
+      : `总数应为 ${q.ans}，把所有数字相加即可。你选的是 ${val}。`}</div></div>`;
+  $("#stat").innerHTML = `已做 <b>${S.quiz.total}</b> · 正确 <b>${S.quiz.right}</b> · 正确率 <b>${S.quiz.total ? Math.round(S.quiz.right / S.quiz.total * 100) : 0}%</b>`;
+});
+$("#qNext").onclick = newQ;
+
+/* ---------------- 技术试验向导 ---------------- */
+function renderExp() {
+  const k = $("#expType").value, e = EXPS[k];
+  $("#expSpec").innerHTML = `
+    <div class="kv"><span>自变量（你改变的）</span><b>${e.ind}</b></div>
+    <div class="kv"><span>因变量（你测量的）</span><b>${e.dep}</b></div>
+    <div class="kv"><span>控制变量（必须一致）</span><b>${e.ctl.join(" / ")}</b></div>
+    <div class="kv"><span>测量工具</span><b>${e.tool}</b></div>`;
+  $("#expTable").innerHTML = `
+    <table class="dt">
+      <thead><tr><th>#</th><th>取值</th><th>①</th><th>②</th><th>③</th><th>平均</th></tr></thead>
+      <tbody>${[1, 2, 3, 4, 5].map(i => `
+        <tr><td>${i}</td>
+        <td><input type="number" data-c="${i}" placeholder="—"></td>
+        <td><input type="number" data-t="${i}-1" placeholder="—"></td>
+        <td><input type="number" data-t="${i}-2" placeholder="—"></td>
+        <td><input type="number" data-t="${i}-3" placeholder="—"></td>
+        <td data-m="${i}" class="mono">—</td></tr>`).join("")}
+      </tbody></table>
+    <p class="hint" style="margin:8px 0 0">「取值」填自变量水平（如支撑柱数量），①②③为三次重复测量值。</p>`;
+  $("#expOut").innerHTML = "";
+}
+$("#expType").onchange = renderExp;
+
+$("#expCalc").onclick = () => {
+  const e = EXPS[$("#expType").value];
+  const rows = [];
+  for (let i = 1; i <= 5; i++) {
+    const c = parseFloat($(`input[data-c="${i}"]`).value);
+    const ts = [1, 2, 3].map(j => parseFloat($(`input[data-t="${i}-${j}"]`).value)).filter(v => !isNaN(v));
+    const m = ts.length ? ts.reduce((a, b) => a + b, 0) / ts.length : NaN;
+    $(`td[data-m="${i}"]`).textContent = isNaN(m) ? "—" : m.toFixed(1);
+    if (!isNaN(c) && !isNaN(m)) rows.push({ c, m, ts });
+  }
+  if (rows.length < 2) { toast("至少填两行有效数据"); return; }
+
+  const ms = rows.map(r => r.m);
+  const mono = ms.every((v, i) => i === 0 || v >= ms[i - 1]) || ms.every((v, i) => i === 0 || v <= ms[i - 1]);
+  const maxSpread = Math.max(...rows.map(r => Math.max(...r.ts) - Math.min(...r.ts)));
+  const rel = maxSpread / (Math.max(...ms) || 1);
+  const best = rows.reduce((a, b) => (b.m > a.m ? b : a));
+  const first = rows[0], last = rows[rows.length - 1];
+  const chg = first.m ? ((last.m - first.m) / first.m * 100) : 0;
+
+  $("#expOut").innerHTML = `
+    <div class="card pad" style="margin-top:16px">
+      <div class="sect-h"><span class="num">图 09</span><h2>数据解读与结论模板</h2></div>
+      <div class="kv"><span>有效水平数</span><b>${rows.length}</b></div>
+      <div class="kv"><span>趋势</span><b>${mono ? (last.m > first.m ? "随自变量增大而单调上升" : "随自变量增大而单调下降") : "非单调（存在峰值或波动）"}</b></div>
+      <div class="kv"><span>${e.ind.split(" / ")[0]} = ${last.c} 时</span><b>${last.m.toFixed(1)}</b></div>
+      <div class="kv"><span>相对首组变化</span><b>${chg >= 0 ? "+" : ""}${chg.toFixed(1)}%</b></div>
+      <div class="kv"><span>三次重复极差</span><b>${maxSpread.toFixed(2)}（相对 ${(rel * 100).toFixed(1)}%）</b></div>
+      <div class="tip ${rel <= 0.1 ? "ok" : ""}">
+        <span>${rel <= 0.1 ? "✓" : "!"}</span>
+        <div>${rel <= 0.1
+          ? "<b>重复性良好</b>，相对极差 ≤ 10%，这组数据可以直接用于结论。"
+          : "<b>重复性偏大</b>，相对极差超过 10%。检查：加载位置是否一致？读数时机是否一致？操作是否同一人？建议重测。"}</div>
+      </div>
+      <p style="margin:14px 0 6px;font-size:13px;color:#7c8aa0;letter-spacing:.04em">结论模板（可直接改写进报告）</p>
+      <div style="background:#f4f7fa;border:1px solid #dde5ee;border-radius:9px;padding:12px 14px;font-size:14px;line-height:1.8">
+        在<strong>${e.ctl.join("、")}</strong>保持一致的条件下，改变${e.ind.split(" / ")[0]}（${first.c} → ${last.c}），
+        测得${e.dep}由 <strong>${first.m.toFixed(1)}</strong> 变化到 <strong>${last.m.toFixed(1)}</strong>，
+        ${mono ? (chg >= 0 ? "呈单调上升" : "呈单调下降") : "呈先升后降的趋势，在 ${best.c} 附近取得最大值 " + best.m.toFixed(1)}，
+        三次重复的相对极差为 ${(rel * 100).toFixed(1)}%。
+        ${best.c !== last.c && chg >= 0 && !mono ? "说明存在最优取值，进一步优化应围绕该水平展开。" : (chg >= 0 ? "说明增大该参数有助于提升性能，但需注意成本与结构的边际效应。" : "说明该参数并非越大越好，需结合其他指标权衡。")}
+      </div>
+      <div class="row"><button class="btn ghost sm" onclick="window.print()">打印 / 存为 PDF</button></div>
+    </div>`;
+
+  S.exp++; save();
+};
+
+/* ---------------- 素养画像 ---------------- */
+function radar(vals) {
+  const cx = 150, cy = 143, R = 100, n = 5, labels = ["技术意识", "工程思维", "创新设计", "图样表达", "物化能力"];
+  const pt = (i, r) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+    return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  };
+  let s = `<svg width="300" height="300" viewBox="0 0 300 300">`;
+  for (let g = 1; g <= 4; g++) {
+    const r = R * g / 4;
+    s += `<polygon points="${[...Array(n)].map((_, i) => pt(i, r).map(v => v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="#dde5ee"/>`;
+  }
+  for (let i = 0; i < n; i++) {
+    const [x, y] = pt(i, R);
+    s += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#dde5ee"/>`;
+    const [lx, ly] = pt(i, R + 26);
+    s += `<text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}" font-size="11.5" text-anchor="middle" fill="#43536b">${labels[i]}</text>`;
+  }
+  const poly = vals.map((v, i) => pt(i, R * clamp(v, 0, 100) / 100).map(x => x.toFixed(1)).join(",")).join(" ");
+  s += `<polygon points="${poly}" fill="rgba(13,125,108,.18)" stroke="#0d7d6c" stroke-width="2"/>`;
+  vals.forEach((v, i) => { const [x, y] = pt(i, R * clamp(v, 0, 100) / 100); s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.6" fill="#0d7d6c"/>`; });
+  return s + "</svg>";
+}
+
+function calcScore() {
+  const qa = clamp(S.qa * 4 + S.topics.length * 3, 0, 100);
+  const stagesDone = S.design.answers.filter(a => (a || "").trim().length > 10).length;
+  const eng = clamp(stagesDone * 18 + (S.design.checks || []).length * 2, 0, 100);
+  const innov = clamp(stagesDone >= 3 ? 40 + (S.design.answers[2] || "").length * 0.4 : stagesDone * 12, 0, 100);
+  const draw = S.quiz.total ? clamp(Math.round(S.quiz.right / S.quiz.total * 100), 0, 100) : 0;
+  const phys = clamp(S.exp * 22, 0, 100);
+  return [Math.round(qa), Math.round(eng), Math.round(innov), Math.round(draw), Math.round(phys)];
+}
+
+function renderProfile() {
+  const v = calcScore(), avg = Math.round(v.reduce((a, b) => a + b, 0) / 5);
+  const labels = ["技术意识", "工程思维", "创新设计", "图样表达", "物化能力"];
+  const low = v.map((x, i) => ({ x, n: labels[i] })).sort((a, b) => a.x - b.x)[0];
+
+  $("#radar").innerHTML = radar(v);
+  $("#scoreList").innerHTML = v.map((x, i) => `
+    <div class="dim">
+      <div class="dim-h"><span>${labels[i]}</span><em>${x}</em></div>
+      <div class="bar"><i class="${x >= 70 ? "hi" : x >= 35 ? "mid" : "lo"}" style="width:${x}%"></i></div>
+    </div>`).join("");
+
+  $("#scoreSum").innerHTML = `
+    <div class="kv"><span>问答覆盖知识点</span><b>${S.topics.length} / ${KB.length}</b></div>
+    <div class="kv"><span>设计工坊完成阶段</span><b>${S.design.answers.filter(a => (a || "").trim()).length} / 5</b></div>
+    <div class="kv"><span>三视图练习</span><b>${S.quiz.right} / ${S.quiz.total}</b></div>
+    <div class="kv"><span>技术试验记录</span><b>${S.exp} 次</b></div>`;
+
+  const advice = {
+    技术意识: "多问\"为什么\"——留意身边那些用起来别扭的东西，把它们记进设计日志。",
+    工程思维: "去设计工坊把五个阶段走完，特别是「明确设计要求」和「优化与评价」两步。",
+    创新设计: "逼自己写出两个原理不同的方案，并说明为什么选这个、放弃那个。",
+    图样表达: "去图样训练连做 10 道三视图，错题要看错因，不要只看答案。",
+    物化能力: "做一次技术试验：只改一个变量、重复三次、把数据记下来。"
+  };
+
+  $("#advice").innerHTML = `<div class="tip ${avg >= 70 ? "ok" : ""}">
+    <span>${avg >= 70 ? "✓" : "!"}</span>
+    <div><b>综合 ${avg} 分。</b>当前最该补的是 <b>${low.n}</b>（<span style="white-space:nowrap">${low.x} 分</span>）。<br>${advice[low.n]}</div></div>`;
+}
+
+$("#resetAll").onclick = () => {
+  if (!confirm("清空所有学习记录？")) return;
+  localStorage.removeItem(KEY); S = structuredClone(DEFAULT_STATE); stage = 0;
+  renderStage(); renderProfile(); toast("已重置");
+};
+
+/* ---------------- 大模型设置面板 ---------------- */
+function refreshAIStatus() {
+  const b = $("#aiBadge"); if (!b) return;
+  if (aiReady()) { b.textContent = "AI 已连接"; b.className = "badge ok"; }
+  else { b.textContent = "本地模式"; b.className = "badge off"; }
+}
+
+function openCfg() {
+  $("#cfgUrl").value = CFG.baseUrl;
+  $("#cfgModel").value = CFG.model;
+  $("#cfgKey").value = CFG.apiKey || "";
+  $("#cfgMsg").textContent = "";
+  $("#settings").hidden = false;
+}
+function closeCfg() { $("#settings").hidden = true; }
+
+function saveCfg() {
+  CFG.baseUrl = $("#cfgUrl").value.trim() || AI_DEFAULT.baseUrl;
+  CFG.model = $("#cfgModel").value.trim() || AI_DEFAULT.model;
+  CFG.apiKey = $("#cfgKey").value.trim();
+  try { localStorage.setItem(AI_CFG_KEY, JSON.stringify(CFG)); } catch (e) { }
+  refreshAIStatus();
+  $("#cfgMsg").textContent = aiReady() ? "已保存，现在可以使用大模型了。" : "已保存。Key 为空，仍在本地模式。";
+}
+
+async function testCfg() {
+  const msg = $("#cfgMsg");
+  const key = $("#cfgKey").value.trim();
+  if (!key) { msg.textContent = "先填 API Key 再测试。"; return; }
+  msg.textContent = "正在连接…";
+  try {
+    const res = await fetch($("#cfgUrl").value.trim() || AI_DEFAULT.baseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+      body: JSON.stringify({
+        model: $("#cfgModel").value.trim() || AI_DEFAULT.model,
+        messages: [{ role: "user", content: "回复两个字：可用" }],
+        max_tokens: 12
+      })
+    });
+    if (!res.ok) { msg.textContent = "连接失败：HTTP " + res.status + "（检查 Key 与模型名）"; return; }
+    const j = await res.json();
+    const t = ((j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || "").trim();
+    msg.textContent = "连接成功：" + (t || "模型已响应");
+  } catch (e) {
+    msg.textContent = "连接失败：" + e.message + "（可能是跨域或网络问题）";
+  }
+}
+
+$("#openCfg").onclick = openCfg;
+$("#cfgClose").onclick = closeCfg;
+$("#cfgSave").onclick = saveCfg;
+$("#cfgTest").onclick = testCfg;
+$("#settings").addEventListener("click", e => { if (e.target.id === "settings") closeCfg(); });
+
+/* ---------------- 启动 ---------------- */
+renderStage();
+renderExp();
+newQ();
+refreshAIStatus();
+syncBars();
+bubble("bot", `<p>你好，我是<strong>格物</strong>，《通用技术概论》的学伴。</p>
+  <p>两件事我陪你做：<strong>把设计走通</strong>（发现问题 → 制定方案 → 制作原型 → 技术试验 → 优化评价），<strong>把课备明白</strong>。</p>
+  <p class="muted">想先问个知识点，还是直接开始做一个设计？${aiReady() ? "" : "（当前为本地知识库模式，点右上角 ⚙ 可接入大模型）"}</p>`);
+renderStarter();
+if (location.hash.slice(1)) show(location.hash.slice(1), true);
+</script>
+</body>
+</html>
