@@ -1807,7 +1807,7 @@ function md(src) {
 
 async function streamAI(text, bub) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 35000);
+  const timer = setTimeout(() => ctrl.abort(), 60000);
   const ctx = (search(text) || []).slice(0, 2).filter(r => r.sc > 0)
     .map(r => `【${r.e.t}】${stripTags(r.e.a)}`).join("\n\n");
 
@@ -1844,7 +1844,7 @@ async function streamAI(text, bub) {
         try {
           const j = JSON.parse(d);
           const c = (j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content) || "";
-          if (c) { full += c; bub.innerHTML = md(full); log.scrollTop = log.scrollHeight; }
+          if (c) { full += c; bub.dataset.tok = "1"; bub.innerHTML = md(full); log.scrollTop = log.scrollHeight; }
         } catch (e) { /* 心跳行 */ }
       }
     }
@@ -1867,7 +1867,11 @@ async function reply(text) {
 
   if (aiReady()) {
     const bub = bubble("bot", `<span class="muted">思考中…</span>`);
+    const slow = setTimeout(() => {
+      if (!bub.dataset.tok) bub.innerHTML = `<span class="muted">模型响应较慢，仍在生成…</span>`;
+    }, 9000);
     const ok = await streamAI(t, bub);
+    clearTimeout(slow);
     if (ok) {
       const ranked = search(t) || [];
       setChips(ranked.slice(1, 3).map(r => r.e.t).concat(["进设计工坊", "去图样训练"]));
